@@ -1,26 +1,25 @@
 <script setup>
-import { ref } from 'vue'
+import { onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAlertStore } from '../stores/alertStore'
 import { emergencias } from '../data/emergencias'
+import TriageCard from '../components/TriageCard.vue'
 
 const router = useRouter()
 const store = useAlertStore()
 
-// Controla qué tarjeta está siendo interactuada (para animación del GIF)
-const activeCard = ref(null)
+// Al montar el Home, nos aseguramos de resetear cualquier estado previo.
+// Esto cumple con el criterio de aceptación de evitar fugas de estado al volver a /.
+onMounted(() => {
+  store.resetAlerta()
+})
 
-function handleSelect(emergencia) {
-  store.setEmergencia(emergencia)
-  router.push({ name: 'contexto' })
-}
-
-function handleEnter(id) {
-  activeCard.value = id
-}
-
-function handleLeave() {
-  activeCard.value = null
+function handleSelect(id) {
+  const emergencia = emergencias.find(e => e.id === id)
+  if (emergencia) {
+    store.setEmergencia(emergencia)
+    router.push({ name: 'contexto' })
+  }
 }
 </script>
 
@@ -37,6 +36,7 @@ function handleLeave() {
       </router-link>
     </header>
 
+    <!-- Botón de pánico principal -->
     <button class="panic-card" aria-label="Botón de pánico, mantener presionado 4 segundos">
       <div class="panic-left">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -60,51 +60,22 @@ function handleLeave() {
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <path d="M12 3a12 12 0 0 0 8.5 3A12 12 0 0 1 12 21 12 12 0 0 1 3.5 6 12 12 0 0 0 12 3z" />
       </svg>
-      Emergencias
+      ¿Qué sucede?
     </div>
 
-    <!-- Sad Path: si el array está vacío, muestra mensaje de error -->
+    <!-- Mensaje si no hay datos de emergencia -->
     <p v-if="emergencias.length === 0" class="error-msg">
-      No hay tipos de emergencia disponibles.
+      No hay tipos de emergencia disponibles en este momento.
     </p>
 
-    <!-- Tarjetas renderizadas dinámicamente con v-for -->
+    <!-- Rejilla de triaje con componente reutilizable -->
     <div v-else class="emergency-grid">
-      <button
+      <TriageCard
         v-for="em in emergencias"
         :key="em.id"
-        class="e-card"
-        :style="{ '--card-color': em.color }"
-        @click="handleSelect(em)"
-        @pointerenter="handleEnter(em.id)"
-        @pointerleave="handleLeave"
-        :aria-label="`Emergencia: ${em.label}`"
-      >
-        <div class="e-icon-wrap">
-          <!-- Icono SVG con fill='currentColor' para contraste accesible -->
-          <svg v-if="em.icon === 'shield'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M12 3a12 12 0 0 0 8.5 3A12 12 0 0 1 12 21 12 12 0 0 1 3.5 6 12 12 0 0 0 12 3z" />
-          </svg>
-          <svg v-else-if="em.icon === 'lock'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="5" y="11" width="14" height="10" rx="2" />
-            <circle cx="12" cy="16" r="1" />
-            <path d="M8 11V7a4 4 0 0 1 8 0v4" />
-          </svg>
-          <svg v-else-if="em.icon === 'warning'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="10" />
-            <path d="M12 6v12M6 12h12" />
-          </svg>
-          <svg v-else viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="10" />
-            <circle cx="12" cy="8" r="1.5" />
-            <circle cx="12" cy="12" r="1.5" />
-            <circle cx="12" cy="16" r="1.5" />
-          </svg>
-        </div>
-        <span class="e-label">{{ em.label }}</span>
-        <!-- Indicador visual de interacción (simula GIF al interactuar) -->
-        <div v-if="activeCard === em.id" class="e-active-dot" />
-      </button>
+        v-bind="em"
+        @select="handleSelect"
+      />
     </div>
 
     <div class="section-title">
@@ -112,7 +83,7 @@ function handleLeave() {
         <circle cx="12" cy="12" r="10" />
         <path d="M12 6v6l4 2" />
       </svg>
-      Última alerta
+      Última actividad
     </div>
 
     <router-link to="/historial" class="alert-mini">
@@ -123,7 +94,7 @@ function handleLeave() {
         <div class="a-type">Violencia</div>
         <div class="a-date">12 may 2026 - 14:32</div>
       </div>
-      <div class="a-badge">En proceso</div>
+      <div class="a-badge">Finalizada</div>
     </router-link>
   </div>
 </template>
@@ -139,7 +110,7 @@ function handleLeave() {
 .home-header h1 {
   margin: 0;
   font-size: 24px;
-  font-weight: 700;
+  font-weight: 800;
   color: var(--on-surface);
 }
 
@@ -147,19 +118,22 @@ function handleLeave() {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
   color: var(--on-surface);
   text-decoration: none;
-  background: transparent;
-  border: none;
-  cursor: pointer;
+  background: var(--surface-2);
+  transition: background-color 0.2s ease;
+}
+
+.icon-btn:active {
+  background-color: var(--border);
 }
 
 .icon-btn svg {
-  width: 22px;
-  height: 22px;
+  width: 24px;
+  height: 24px;
 }
 
 .panic-card {
@@ -167,48 +141,48 @@ function handleLeave() {
   justify-content: space-between;
   align-items: center;
   width: 100%;
-  padding: 16px 20px;
-  margin-bottom: 24px;
+  padding: 20px;
+  margin-bottom: 32px;
   background: var(--primary);
   color: #fff;
   border: none;
   border-radius: var(--radius);
   cursor: pointer;
-  box-shadow: 0 4px 12px rgba(166, 33, 0, 0.3);
-  transition: transform 150ms ease, box-shadow 150ms ease;
+  box-shadow: 0 8px 16px rgba(166, 33, 0, 0.25);
+  transition: all 0.2s ease;
 }
 
 .panic-card:active {
-  transform: scale(0.97);
-  box-shadow: 0 2px 6px rgba(166, 33, 0, 0.4);
+  transform: scale(0.98);
+  box-shadow: 0 4px 8px rgba(166, 33, 0, 0.3);
 }
 
 .panic-left {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 16px;
 }
 
 .panic-left svg {
-  width: 28px;
-  height: 28px;
-  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
 }
 
 .panic-title {
-  font-size: 18px;
-  font-weight: 700;
+  font-size: 20px;
+  font-weight: 800;
+  text-align: left;
 }
 
 .panic-sub {
-  font-size: 13px;
-  opacity: 0.85;
+  font-size: 14px;
+  opacity: 0.9;
+  text-align: left;
 }
 
 .panic-arrow {
-  width: 20px;
-  height: 20px;
-  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
 }
 
 .section-title {
@@ -216,127 +190,75 @@ function handleLeave() {
   align-items: center;
   gap: 8px;
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 700;
   color: var(--on-surface-muted);
   text-transform: uppercase;
-  letter-spacing: 0.5px;
-  margin-bottom: 12px;
+  letter-spacing: 1px;
+  margin-bottom: 16px;
 }
 
 .section-title svg {
-  width: 16px;
-  height: 16px;
-}
-
-.error-msg {
-  padding: 16px;
-  text-align: center;
-  color: var(--danger);
-  background: rgba(198, 40, 40, 0.08);
-  border-radius: var(--radius);
-  font-size: 14px;
+  width: 18px;
+  height: 18px;
 }
 
 .emergency-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-  margin-bottom: 24px;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+  margin-bottom: 32px;
 }
 
-.e-card {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  padding: 20px 12px;
-  background: var(--surface);
-  border: 2px solid var(--border);
+.error-msg {
+  padding: 24px;
+  text-align: center;
+  color: var(--danger);
+  background: rgba(198, 40, 40, 0.05);
   border-radius: var(--radius);
-  cursor: pointer;
-  transition: border-color 200ms ease, box-shadow 200ms ease, transform 150ms ease;
-  position: relative;
-}
-
-.e-card:hover {
-  border-color: var(--card-color);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-}
-
-.e-card:active {
-  transform: scale(0.96);
-}
-
-.e-icon-wrap svg {
-  width: 32px;
-  height: 32px;
-  color: var(--card-color);
-}
-
-.e-label {
-  font-size: 14px;
   font-weight: 600;
-  color: var(--on-surface);
-}
-
-.e-active-dot {
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--card-color);
-  animation: pulse 1s ease infinite;
-}
-
-@keyframes pulse {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.5; transform: scale(1.4); }
 }
 
 .alert-mini {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 14px 16px;
+  gap: 16px;
+  padding: 16px;
   background: var(--surface-2);
   border-radius: var(--radius);
   text-decoration: none;
   color: var(--on-surface);
-  transition: box-shadow 150ms ease;
+  transition: transform 0.2s ease;
 }
 
-.alert-mini:hover {
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+.alert-mini:active {
+  transform: scale(0.99);
 }
 
 .alert-mini svg {
-  width: 20px;
-  height: 20px;
+  width: 24px;
+  height: 24px;
   color: var(--on-surface-muted);
-  flex-shrink: 0;
 }
 
 .a-info {
   flex: 1;
+  text-align: left;
 }
 
 .a-type {
-  font-size: 14px;
-  font-weight: 600;
+  font-size: 16px;
+  font-weight: 700;
 }
 
 .a-date {
-  font-size: 12px;
+  font-size: 13px;
   color: var(--on-surface-muted);
 }
 
 .a-badge {
-  font-size: 11px;
-  font-weight: 600;
-  padding: 4px 10px;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 6px 12px;
   border-radius: 20px;
   background: rgba(46, 125, 50, 0.1);
   color: var(--success);
