@@ -1,7 +1,6 @@
 <script setup>
-import { reactive } from 'vue'
+import { reactive, computed, ref } from 'vue'
 
-// Objeto reactivo con los 4 campos del perfil del usuario
 const perfil = reactive({
   rut: '',
   nombre: '',
@@ -10,11 +9,46 @@ const perfil = reactive({
   contacto_telefono: '',
 })
 
+const rutBlurred = ref(false)
+const nombreBlurred = ref(false)
+
+const esFormularioValido = computed(() => {
+  return perfil.rut.length >= 9 && perfil.nombre.length >= 2
+})
+
+function formatearRut(raw) {
+  const limpio = raw.replace(/[^0-9kK]/g, '')
+  if (limpio.length <= 1) return limpio.toUpperCase()
+  const digito = limpio.slice(-1).toUpperCase()
+  const cuerpo = limpio.slice(0, -1)
+  const formateado = cuerpo.replace(/\B(?=(\d{3})+(?!\d))/g, '.')
+  return `${formateado}-${digito}`
+}
+
+function onRutInput(e) {
+  const cursor = e.target.selectionStart
+  const antes = perfil.rut
+  perfil.rut = formatearRut(e.target.value)
+  const despues = perfil.rut
+  if (cursor && despues.length > antes.length) {
+    requestAnimationFrame(() => {
+      e.target.setSelectionRange(cursor + (despues.length - antes.length), cursor + (despues.length - antes.length))
+    })
+  }
+}
+
 function guardar() {
   localStorage.setItem('perfil', JSON.stringify(perfil))
 }
 
-// Expone perfil a la consola para depuración (DevTools)
+function onRutBlur() {
+  rutBlurred.value = true
+}
+
+function onNombreBlur() {
+  nombreBlurred.value = true
+}
+
 window.$perfil = perfil
 </script>
 
@@ -37,12 +71,15 @@ window.$perfil = perfil
         <span class="form-label">RUT</span>
         <input
           name="rut"
-          v-model="perfil.rut"
+          :value="perfil.rut"
+          @input="onRutInput"
+          @blur="onRutBlur"
           type="text"
           inputmode="numeric"
           placeholder="12.345.678-9"
           autocomplete="off"
         />
+        <span v-if="rutBlurred && perfil.rut.length < 9" class="form-error">RUT inválido. Debe tener al menos 8 dígitos + dígito verificador.</span>
       </label>
 
       <label class="form-group">
@@ -50,11 +87,13 @@ window.$perfil = perfil
         <input
           name="nombre"
           v-model="perfil.nombre"
+          @blur="onNombreBlur"
           type="text"
           autocapitalize="words"
           placeholder="Ej: María Pérez"
           autocomplete="name"
         />
+        <span v-if="nombreBlurred && perfil.nombre.length < 2" class="form-error">El nombre debe tener al menos 2 caracteres.</span>
       </label>
 
       <label class="form-group">
@@ -93,7 +132,7 @@ window.$perfil = perfil
         />
       </label>
 
-      <button type="submit" class="save-btn">Guardar datos</button>
+      <button type="submit" class="save-btn" :disabled="!esFormularioValido">Guardar datos</button>
     </form>
   </div>
 </template>
@@ -171,6 +210,13 @@ window.$perfil = perfil
   border-color: var(--primary);
 }
 
+.form-error {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--danger);
+  line-height: 1.4;
+}
+
 .save-btn {
   width: 100%;
   padding: 16px;
@@ -182,10 +228,16 @@ window.$perfil = perfil
   font-size: 16px;
   font-weight: 700;
   cursor: pointer;
-  transition: transform 0.15s ease;
+  transition: opacity 0.2s ease, transform 0.15s ease;
 }
 
-.save-btn:active {
+.save-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.save-btn:active:not(:disabled) {
   transform: scale(0.97);
 }
 </style>
