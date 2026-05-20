@@ -85,6 +85,14 @@ Siempre usar `<script setup>` con Composition API. Orden de bloques:
 - Arrays de datos en `src/data/` (ej. `emergencias.js`)
 - Se renderizan con `v-for`, nunca hardcodear tarjetas en el template
 
+### Inclusión de Personas Sordas (LSCh)
+
+- **No infantilizar**: Las personas sordas chilenas son una comunidad lingüística y cultural, no personas con capacidades reducidas. El diseño debe ser digno y respetuoso.
+- **No asumir español escrito**: Muchas personas sordas tienen el español como segunda lengua y pueden tener dificultades de lectura. Priorizar siempre la comunicación visual.
+- **Pictogramas y elementos visuales**: Toda interfaz debe ser comprensible sin depender de texto. Iconos, colores, animaciones y GIFs deben comunicar el mensaje por sí solos.
+- **GIFs de lengua de señas**: Siempre que sea posible, usar GIFs reales de personas haciendo señas (LSCh) en lugar de ilustraciones genéricas. Los GIFs se reproducen al interactuar (hover/focus/tap), no al cargar la vista.
+- **Idioma de comentarios y documentación**: Español (para el equipo de desarrollo), pero la interfaz debe minimizar el uso de texto.
+
 ### Seguridad (VIF)
 
 - **Protocolo de limpieza**: Al navegar fuera de `/exito`, se debe llamar a `resetAlerta()` y limpiar el almacenamiento local (`localStorage.clear()`).

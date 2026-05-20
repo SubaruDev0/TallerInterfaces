@@ -122,6 +122,20 @@ npm run preview
 4. Puede revisar alertas previas en **Historial**
 5. Puede gestionar sus datos en **Perfil**
 
+## Accesibilidad e Inclusión (LSCh)
+
+### Pautas para personas sordas chilenas
+- **No infantilizar**: La comunidad sorda chilena es una comunidad lingüística y cultural. El diseño debe ser digno y respetuoso.
+- **No asumir español escrito**: Muchas personas sordas manejan el español como segunda lengua. La interfaz prioriza siempre la comunicación visual.
+- **Lengua de Señas Chilena (LSCh)**: Los GIFs de personas reales haciendo señas son el recurso principal de comunicación. Se activan al interactuar (hover/focus/tap), no al cargar la vista.
+- **Pictogramas y color**: Cada emergencia tiene un color y un pictograma distintivo para identificar sin leer.
+- **Contraste**: Los iconos SVGs usan `stroke="currentColor"` con contraste mínimo 3:1 (WCAG 2.2 AA) sobre fondos claros y oscuros.
+- **Areas táctiles**: Mínimo 88x88px en todos los elementos interactivos.
+- **aria-label**: Todos los botones e iconos sin texto visible tienen etiquetas descriptivas para lectores de pantalla.
+
+### GIFs de LSCh incluidos
+Los GIFs se almacenan en `public/lsch/` y fueron obtenidos de la serie educativa "Sign with Robert" (GIPHY). Cada tarjeta de emergencia muestra un GIF de una persona real haciendo la seña correspondiente al interactuar con ella.
+
 ## Criterios de Accesibilidad
 
 - SVGs con `stroke="currentColor"` y `fill="currentColor"` para heredar color del contexto
