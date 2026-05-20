@@ -6,7 +6,8 @@ const perfil = reactive({
   rut: '',
   nombre: '',
   telefono: '',
-  contacto: '', // contacto de emergencia
+  contacto_nombre: '',
+  contacto_telefono: '',
 })
 
 function guardar() {
@@ -70,10 +71,22 @@ window.$perfil = perfil
       <label class="form-group">
         <span class="form-label">Contacto de emergencia</span>
         <input
-          name="contacto"
-          v-model="perfil.contacto"
+          name="contacto_nombre"
+          v-model="perfil.contacto_nombre"
           type="text"
-          placeholder="Nombre y teléfono de un familiar"
+          placeholder="Nombre del familiar o amigo"
+          autocomplete="off"
+        />
+      </label>
+
+      <label class="form-group">
+        <span class="form-label">Teléfono del contacto</span>
+        <input
+          name="contacto_telefono"
+          v-model="perfil.contacto_telefono"
+          type="tel"
+          inputmode="numeric"
+          placeholder="+56 9 1234 5678"
           autocomplete="off"
         />
       </label>
