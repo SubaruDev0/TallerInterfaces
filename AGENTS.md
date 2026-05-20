@@ -95,7 +95,7 @@ Siempre usar `<script setup>` con Composition API. Orden de bloques:
 
 ### Seguridad (VIF)
 
-- **Protocolo de limpieza**: Al navegar fuera de `/exito`, se debe llamar a `resetAlerta()` y limpiar el almacenamiento local (`localStorage.clear()`).
+- **Protocolo de limpieza (autodestrucción)**: Al salir de `/exito`, ejecutar `resetAlerta()`, `localStorage.clear()` y `sessionStorage.clear()` en `onUnmounted`. También en `onBeforeRouteLeave` como doble capa de seguridad. Todo en español.
 - **Feedback de red**: Usar `navigator.onLine` para adaptar la UI en pasos críticos (como la confirmación de envío).
 
 ### CSS
