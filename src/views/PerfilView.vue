@@ -51,6 +51,7 @@ window.$perfil = perfil
           name="nombre"
           v-model="perfil.nombre"
           type="text"
+          autocapitalize="words"
           placeholder="Ej: María Pérez"
           autocomplete="name"
         />
@@ -74,6 +75,7 @@ window.$perfil = perfil
           name="contacto_nombre"
           v-model="perfil.contacto_nombre"
           type="text"
+          autocapitalize="words"
           placeholder="Nombre del familiar o amigo"
           autocomplete="off"
         />
