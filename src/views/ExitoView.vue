@@ -1,40 +1,68 @@
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter, onBeforeRouteLeave } from 'vue-router'
 import { useAlertStore } from '../stores/alertStore'
+import { useCasosStore } from '../stores/casosStore'
+import { preguntasTerreno } from '../data/preguntasTerreno'
+import SafeCalculatorOverlay from '../components/SafeCalculatorOverlay.vue'
 
 const router = useRouter()
 const store = useAlertStore()
+const casosStore = useCasosStore()
 
-// Variable reactiva para el estado de la conexión
 const isOnline = ref(navigator.onLine)
+const casoId = ref(null)
+const mostrarCalculadora = ref(false)
 
-// Funciones para actualizar el estado
 const updateOnlineStatus = () => {
   isOnline.value = navigator.onLine
 }
 
-// Lógica de "autodestrucción" al salir de la pantalla de éxito
-// Esto borra todo rastro de la emergencia actual para proteger al usuario
 const autodestruccion = () => {
   store.resetAlerta()
+  const perfil = localStorage.getItem('perfil')
+  const casos = localStorage.getItem('casos')
   localStorage.clear()
+  if (perfil) localStorage.setItem('perfil', perfil)
+  if (casos) localStorage.setItem('casos', casos)
   sessionStorage.clear()
 }
 
-// Configuración de listeners de eventos de red
+const cat = computed(() => store.emergenciaSeleccionada?.titulo || '')
+
 onMounted(() => {
   window.addEventListener('online', updateOnlineStatus)
   window.addEventListener('offline', updateOnlineStatus)
+
+  const mapaPreguntas = {}
+  preguntasTerreno.forEach(q => {
+    mapaPreguntas[q.id] = q.pregunta_texto
+  })
+
+  const nuevoCaso = casosStore.crearCaso({
+    victimRut: store.perfil.rut,
+    victimNombre: store.perfil.nombre,
+    victimTelefono: store.perfil.telefono,
+    victimContacto: store.perfil.contacto_nombre + (store.perfil.contacto_telefono ? ' · ' + store.perfil.contacto_telefono : ''),
+    victimContactoNombre: store.perfil.contacto_nombre || '',
+    victimContactoTelefono: store.perfil.contacto_telefono || '',
+    emergencia: store.emergenciaSeleccionada,
+    contexto: {
+      ubicacion: store.ubicacion,
+      respuestas: { ...store.respuestas },
+      preguntas: mapaPreguntas,
+    },
+  })
+  casoId.value = nuevoCaso.id
 })
 
-// Hook de Vue Router para ejecutar la limpieza antes de cambiar de ruta
 onBeforeRouteLeave((to, from) => {
-  autodestruccion()
+  if (to.name !== 'encuentro') {
+    autodestruccion()
+  }
   return true
 })
 
-// Limpieza de listeners al desmontar el componente
 onUnmounted(() => {
   autodestruccion()
   window.removeEventListener('online', updateOnlineStatus)
@@ -42,8 +70,9 @@ onUnmounted(() => {
 })
 
 function volverHome() {
-  router.push({ name: 'home' })
+  router.push({ path: '/victim' })
 }
+
 </script>
 
 <template>
@@ -73,11 +102,17 @@ function volverHome() {
       <div class="sms-badge">Enviando SMS...</div>
     </div>
 
-    <button class="footer-btn" @click="volverHome">
-      Volver al inicio
+    <button class="footer-btn" @click="router.push('/victim/historial')">
+      Ver estado de mi denuncia
+    </button>
+
+    <button class="footer-btn ocultar-btn" @click="mostrarCalculadora = true">
+      Ocultar
     </button>
   </div>
 </template>
+
+<SafeCalculatorOverlay v-model="mostrarCalculadora" />
 
 <style scoped>
 .exito {
@@ -91,7 +126,7 @@ function volverHome() {
 }
 
 .exito.is-offline {
-  background-color: #fffde7; /* Amarillo muy suave para modo offline */
+  background-color: #fffde7;
 }
 
 .status-container {
@@ -184,5 +219,11 @@ p {
 .footer-btn:active {
   transform: scale(0.98);
   background-color: var(--surface-2);
+}
+
+.ocultar-btn {
+  background: #222;
+  color: #fff;
+  border-color: #222;
 }
 </style>
