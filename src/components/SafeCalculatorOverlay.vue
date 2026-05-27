@@ -45,85 +45,71 @@ function press(key) {
 </script>
 
 <template>
-  <div v-if="modelValue" class="calc-mask">
-    <div class="calc">
-      <div class="calc-display">{{ display || '0' }}</div>
-      <div class="calc-grid">
-        <button v-for="n in ['7','8','9','÷','4','5','6','×','1','2','3','-','0','.','+','⌫']" :key="n" @click="press(n)">{{ n }}</button>
-        <button class="calc-ghost" @click="press('C')">C</button>
-        <button class="calc-eq" @click="press('=')">=</button>
-      </div>
-      <p class="calc-hint">Para volver, escribe 505 o reinicia la app.</p>
+  <div v-if="modelValue" class="safe-calculator-overlay-container">
+    <div class="calculator-display">{{ display || '0' }}</div>
+    <div class="calculator-buttons-grid">
+      <button v-for="n in ['7','8','9','÷','4','5','6','×','1','2','3','-','0','.','+','⌫']" :key="n" class="calc-btn" :class="{ operator: ['÷','×','-','+'].includes(n) }" @click="press(n)">{{ n }}</button>
+      <button class="calc-btn" @click="press('C')">C</button>
+      <button class="calc-btn operator" @click="press('=')">=</button>
     </div>
   </div>
 </template>
 
 <style scoped>
-.calc-mask {
-  position: fixed;
-  inset: 0;
-  background: #f7f8fb;
+.safe-calculator-overlay-container {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  background-color: #ffffff !important;
+  z-index: 2000 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  padding: 32px 24px !important;
+  box-sizing: border-box !important;
+  border-radius: 36px !important;
+  overflow: hidden !important;
+}
+
+.calculator-display {
+  width: 100%;
+  background: #1e293b;
+  color: #ffffff;
+  text-align: right;
+  padding: 18px;
+  font-size: 28px;
+  font-weight: 700;
+  border-radius: 12px;
+  margin-bottom: 16px;
+}
+
+.calculator-buttons-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  flex: 1;
+}
+
+.calc-btn {
+  background: #f1f5f9;
+  border: none;
+  border-radius: 12px;
+  font-size: 18px;
+  font-weight: 700;
+  color: #0f172a;
+  cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 9999;
+  transition: background 0.1s;
 }
 
-.calc {
-  width: 320px;
-  background: #fff;
-  border-radius: 16px;
-  box-shadow: 0 12px 30px rgba(0,0,0,0.12);
-  padding: 16px;
+.calc-btn:active {
+  background: #cbd5e1;
 }
 
-.calc-display {
-  height: 56px;
-  background: #0f172a;
-  color: #fff;
-  border-radius: 10px;
-  font-size: 24px;
-  font-weight: 700;
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  padding: 0 12px;
-  letter-spacing: 1px;
-  margin-bottom: 10px;
-}
-
-.calc-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 8px;
-}
-
-.calc-grid button {
-  height: 48px;
-  border: none;
-  border-radius: 10px;
-  background: #e8edf5;
-  font-size: 18px;
-  font-weight: 800;
-  color: #1f2937;
-  cursor: pointer;
-}
-
-.calc-eq {
-  grid-column: span 2;
-  background: #111827;
-  color: #fff;
-}
-
-.calc-ghost {
-  background: #fff;
-  border: 2px solid #e5e7eb;
-}
-
-.calc-hint {
-  margin: 12px 0 0;
-  font-size: 11px;
-  color: #6b7280;
-  text-align: center;
+.calc-btn.operator {
+  background: #e2e8f0;
+  color: #006F3E;
 }
 </style>

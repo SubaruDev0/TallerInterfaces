@@ -13,6 +13,19 @@ const selectorAbierto = ref(false)
 const casoParaSelector = ref(null)
 const preguntasSeleccionadas = ref([])
 
+const videoModalAbierto = ref(false)
+const interpretesDisponibles = [
+  { nombre: 'Carlos Muñoz', idioma: 'LSCh', disponible: true },
+  { nombre: 'María Soto', idioma: 'LSCh', disponible: false },
+  { nombre: 'Jorge Rivas', idioma: 'LSCh', disponible: true },
+  { nombre: 'Camila Valdés', idioma: 'LSCh', disponible: false },
+]
+
+function llamarInterprete(nombre) {
+  videoModalAbierto.value = false
+  router.push({ name: 'videollamada', query: { nombre } })
+}
+
 function abrirSelectorPreguntas(caso) {
   casoParaSelector.value = caso
   preguntasSeleccionadas.value = []
@@ -78,17 +91,22 @@ function badgeLabel(estado) {
 </script>
 
 <template>
-  <div class="policia">
-    <header class="policia-header">
-      <div class="policia-top">
-        <h1>Carabinero</h1>
-        <span class="policia-badge">{{ store.casosAsignados.length + store.casosCompletados.length }} casos</span>
+  <div class="page policia mobile-police-container">
+    <header class="police-top-header">
+      <div class="header-left-meta">
+        <img
+          class="escudo-carabineros"
+          src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/46/Roundel_of_Carabineros_de_Chile.svg/250px-Roundel_of_Carabineros_de_Chile.svg.png"
+          alt="Carabineros de Chile"
+        />
       </div>
-      <p class="policia-sub">Órdenes y detalles para terreno</p>
+      <h1>Carabineros en Escena</h1>
+      <div class="header-placeholder-right"></div>
     </header>
 
-    <!-- Casos activos -->
-    <div v-if="store.casosAsignados.length" class="p-s">
+    <main class="police-scrollable-content">
+      <!-- Casos activos -->
+      <div v-if="store.casosAsignados.length" class="p-s">
       <h2 class="p-s-tit">Activos</h2>
       <div v-for="c in store.casosAsignados" :key="c.id" class="caso-card">
         <div class="caso-top">
@@ -129,7 +147,7 @@ function badgeLabel(estado) {
         <div class="caso-actions">
           <button class="btn-detalles" @click="abrirCaso(c)">Ver detalles</button>
           <button class="btn-terreno" @click="abrirSelectorPreguntas(c)">
-            Preguntar a distancia
+            {{ c.estado === 'en_terreno' ? 'Preguntar en terreno' : 'Preguntar a distancia' }}
           </button>
           <button
             v-if="c.estado === 'asignada'"
@@ -286,48 +304,100 @@ function badgeLabel(estado) {
         </div>
       </div>
     </div>
+      <button class="btn-videollamada" @click="videoModalAbierto = true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polygon points="23 7 16 12 23 17 23 7" />
+          <rect x="1" y="5" width="15" height="14" rx="2" ry="2" />
+        </svg>
+      </button>
+
+      <!-- Modal intérpretes -->
+      <div v-if="videoModalAbierto" class="video-modal-mask" @click.self="videoModalAbierto = false">
+        <div class="video-modal">
+          <div class="video-modal-head">
+            <span class="video-modal-icon"></span>
+            <h2>Video intérprete disponible</h2>
+            <button class="video-modal-cerrar" @click="videoModalAbierto = false">×</button>
+          </div>
+          <p class="video-modal-sub">Selecciona un intérprete para iniciar la videollamada:</p>
+          <div class="video-modal-lista">
+            <button
+              v-for="interprete in interpretesDisponibles"
+              :key="interprete.nombre"
+              class="video-modal-item"
+              :class="{ 'no-disponible': !interprete.disponible }"
+              :disabled="!interprete.disponible"
+              @click="interprete.disponible && llamarInterprete(interprete.nombre)"
+            >
+              <span class="video-modal-avatar">{{ interprete.nombre.charAt(0) }}</span>
+              <div class="video-modal-info">
+                <span class="video-modal-nombre">{{ interprete.nombre }}</span>
+                <span class="video-modal-idioma">{{ interprete.idioma }}</span>
+              </div>
+              <span class="video-modal-llamar" :class="{ 'no-disponible-label': !interprete.disponible }">
+                {{ interprete.disponible ? 'Llamar' : 'No disponible' }}
+              </span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </main>
   </div>
 </template>
 
 <style scoped>
-.policia {
-  min-height: 100dvh;
-  background: #f5f7fa;
-  padding: 16px;
-}
-
-.policia-header {
-  margin-bottom: 16px;
-}
-
-.policia-top {
+.mobile-police-container {
   display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  background-color: #F4F7F5;
+  font-family: 'Roboto', sans-serif;
+}
+
+.police-top-header {
+  height: 64px;
+  background-color: #006F3E;
+  display: flex;
+  justify-content: space-between;
   align-items: center;
-  gap: 10px;
+  padding: 0 16px;
+  flex-shrink: 0;
+  color: #ffffff;
+  border-bottom: 1px solid rgba(0,0,0,0.1);
 }
 
-.policia-top h1 {
-  flex: 1;
-  font-size: 22px;
-  font-weight: 800;
+.police-top-header h1 {
   margin: 0;
-  color: #222;
+  font-size: 16px;
+  font-weight: 900;
+  text-align: center;
 }
 
-.policia-badge {
-  font-size: 12px;
-  font-weight: 700;
-  color: #888;
-  background: #eee;
-  padding: 4px 10px;
-  border-radius: 12px;
+.badge-patrulla {
+  font-size: 10px;
+  font-weight: 900;
+  background: rgba(255, 255, 255, 0.15);
+  padding: 4px 8px;
+  border-radius: 6px;
+  text-transform: uppercase;
 }
 
-.policia-sub {
-  font-size: 14px;
-  color: #999;
-  font-weight: 600;
-  margin: 4px 0 0;
+.escudo-carabineros {
+  height: 32px;
+  width: auto;
+  display: block;
+}
+
+.header-placeholder-right {
+  width: 70px;
+}
+
+.police-scrollable-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px 16px;
+  box-sizing: border-box;
 }
 
 .p-s {
@@ -337,7 +407,7 @@ function badgeLabel(estado) {
 .p-s-tit {
   font-size: 12px;
   font-weight: 800;
-  color: #bbb;
+  color: #5A6E65;
   text-transform: uppercase;
   letter-spacing: 1.5px;
   margin: 0 0 10px;
@@ -349,7 +419,7 @@ function badgeLabel(estado) {
   align-items: center;
   gap: 12px;
   padding: 60px 20px;
-  color: #bbb;
+  color: #5A6E65;
   font-size: 15px;
   font-weight: 600;
 }
@@ -357,11 +427,13 @@ function badgeLabel(estado) {
 .p-empty svg { width: 48px; height: 48px; }
 
 .caso-card {
-  background: #fff;
-  border-radius: 14px;
-  padding: 14px;
-  margin-bottom: 10px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  background: #ffffff;
+  border: 1px solid #D1DDD7;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 14px;
+  text-align: left;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.02);
 }
 
 .completado {
@@ -378,6 +450,7 @@ function badgeLabel(estado) {
 .caso-emerg {
   font-size: 15px;
   font-weight: 800;
+  color: #0A1410;
 }
 
 .caso-estado {
@@ -403,7 +476,7 @@ function badgeLabel(estado) {
 .caso-label {
   font-size: 10px;
   font-weight: 700;
-  color: #aaa;
+  color: #5A6E65;
   text-transform: uppercase;
   letter-spacing: 0.8px;
 }
@@ -411,12 +484,12 @@ function badgeLabel(estado) {
 .caso-valor {
   font-size: 14px;
   font-weight: 700;
-  color: #333;
+  color: #0A1410;
 }
 
 .caso-ctx {
   padding: 8px 0;
-  border-top: 1px solid #f0f0f0;
+  border-top: 1px solid #D1DDD7;
   display: flex;
   flex-direction: column;
   gap: 4px;
@@ -430,13 +503,13 @@ function badgeLabel(estado) {
 
 .caso-rta-k {
   font-weight: 700;
-  color: #888;
+  color: #5A6E65;
   min-width: 36px;
 }
 
 .caso-rta-v {
   font-weight: 600;
-  color: #333;
+  color: #0A1410;
 }
 
 .caso-actions {
@@ -448,12 +521,12 @@ function badgeLabel(estado) {
 .btn-detalles {
   flex: 1;
   padding: 12px;
-  border: 2px solid #e0e0e0;
+  border: 2px solid #D1DDD7;
   border-radius: 12px;
   background: #fff;
   font-size: 14px;
   font-weight: 700;
-  color: #333;
+  color: #0A1410;
   cursor: pointer;
 }
 
@@ -462,15 +535,14 @@ function badgeLabel(estado) {
   padding: 12px;
   border: none;
   border-radius: 12px;
-  background: #1b5e20;
+  background: #006F3E;
   color: #fff;
   font-size: 14px;
   font-weight: 800;
   cursor: pointer;
-  transition: transform 0.1s ease;
 }
 
-.btn-terreno:active { transform: scale(0.97); }
+.btn-terreno:active { background: #004D2B; }
 
 .detalle-mask {
   position: fixed;
@@ -512,7 +584,7 @@ function badgeLabel(estado) {
   bottom: 0;
   background: #fff;
   padding: 12px 16px;
-  border-top: 1px solid #eee;
+  border-top: 1px solid #D1DDD7;
 }
 
 .btn-cerrar-caso {
@@ -520,16 +592,15 @@ function badgeLabel(estado) {
   padding: 14px;
   border: none;
   border-radius: 12px;
-  background: #1565c0;
+  background: #006F3E;
   color: #fff;
   font-size: 15px;
   font-weight: 800;
   cursor: pointer;
-  transition: transform 0.1s ease;
 }
 
 .btn-cerrar-caso:active {
-  transform: scale(0.98);
+  background: #004D2B;
 }
 
 .detalle-nota-op {
@@ -559,6 +630,7 @@ function badgeLabel(estado) {
   font-size: 18px;
   font-weight: 800;
   margin: 0;
+  color: #0A1410;
 }
 
 .detalle-cerrar {
@@ -571,17 +643,10 @@ function badgeLabel(estado) {
   cursor: pointer;
 }
 
-.detalle-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 10px;
-  margin-bottom: 10px;
-}
-
 .d-label {
   font-size: 10px;
   font-weight: 800;
-  color: #999;
+  color: #5A6E65;
   text-transform: uppercase;
   letter-spacing: 1px;
 }
@@ -589,12 +654,12 @@ function badgeLabel(estado) {
 .d-value {
   font-size: 14px;
   font-weight: 800;
-  color: #222;
+  color: #0A1410;
 }
 
 .d-sub {
   font-size: 12px;
-  color: #777;
+  color: #5A6E65;
   font-weight: 600;
 }
 
@@ -606,7 +671,7 @@ function badgeLabel(estado) {
 .detalle-ctx,
 .detalle-terreno {
   margin-top: 16px;
-  border-top: 1px solid #eee;
+  border-top: 1px solid #D1DDD7;
   padding-top: 12px;
 }
 
@@ -615,22 +680,21 @@ function badgeLabel(estado) {
   justify-content: space-between;
   gap: 8px;
   padding: 6px 0;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid #D1DDD7;
 }
 
 .d-key {
   font-size: 12px;
   font-weight: 700;
-  color: #555;
+  color: #5A6E65;
 }
 
 .d-val {
   font-size: 12px;
   font-weight: 700;
-  color: #222;
+  color: #0A1410;
 }
 
-/* Modal selector preguntas */
 .selector-mask {
   position: fixed;
   inset: 0;
@@ -665,7 +729,7 @@ function badgeLabel(estado) {
   font-size: 20px;
   font-weight: 800;
   margin: 0;
-  color: #222;
+  color: #0A1410;
 }
 
 .selector-cerrar {
@@ -683,7 +747,7 @@ function badgeLabel(estado) {
 
 .selector-sub {
   font-size: 14px;
-  color: #666;
+  color: #5A6E65;
   margin: 8px 20px 12px;
   padding: 0;
 }
@@ -702,19 +766,18 @@ function badgeLabel(estado) {
   align-items: center;
   gap: 12px;
   padding: 12px;
-  border: 1.5px solid #eee;
+  border: 1.5px solid #D1DDD7;
   border-radius: 12px;
   cursor: pointer;
-  transition: border-color 0.15s, background 0.15s;
 }
 
 .selector-item.active {
-  border-color: #1565c0;
-  background: rgba(21, 101, 192, 0.05);
+  border-color: #006F3E;
+  background: rgba(0, 111, 62, 0.05);
 }
 
 .selector-item input {
-  accent-color: #1565c0;
+  accent-color: #006F3E;
   width: 20px;
   height: 20px;
   flex-shrink: 0;
@@ -723,13 +786,13 @@ function badgeLabel(estado) {
 .selector-txt {
   font-size: 15px;
   font-weight: 600;
-  color: #222;
+  color: #0A1410;
   line-height: 1.3;
 }
 
 .selector-footer {
   padding: 16px 20px;
-  border-top: 1px solid #eee;
+  border-top: 1px solid #D1DDD7;
   flex-shrink: 0;
 }
 
@@ -738,12 +801,11 @@ function badgeLabel(estado) {
   padding: 14px;
   border: none;
   border-radius: 12px;
-  background: #1565c0;
+  background: #006F3E;
   color: #fff;
   font-size: 16px;
   font-weight: 800;
   cursor: pointer;
-  transition: transform 0.1s ease;
 }
 
 .selector-enviar:disabled {
@@ -752,6 +814,170 @@ function badgeLabel(estado) {
 }
 
 .selector-enviar:active:not(:disabled) {
-  transform: scale(0.97);
+  background: #004D2B;
+}
+
+.btn-videollamada {
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+  width: 56px;
+  height: 56px;
+  border: none;
+  border-radius: 50%;
+  background: #006F3E;
+  color: #fff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 16px rgba(0, 111, 62, 0.35);
+  z-index: 500;
+}
+
+.btn-videollamada svg {
+  width: 26px;
+  height: 26px;
+}
+
+.btn-videollamada:active {
+  background: #004D2B;
+}
+
+.video-modal-mask {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.45);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  z-index: 900;
+}
+
+.video-modal {
+  width: 100%;
+  max-width: 450px;
+  background: #fff;
+  border-radius: 20px 20px 0 0;
+  padding: 20px;
+  box-sizing: border-box;
+  box-shadow: 0 -8px 30px rgba(0,0,0,0.15);
+}
+
+.video-modal-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 4px;
+}
+
+.video-modal-head h2 {
+  flex: 1;
+  font-size: 17px;
+  font-weight: 900;
+  margin: 0;
+  color: #0A1410;
+}
+
+.video-modal-icon {
+  font-size: 22px;
+}
+
+.video-modal-cerrar {
+  width: 30px;
+  height: 30px;
+  border: none;
+  border-radius: 50%;
+  background: #f1f1f1;
+  font-size: 18px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.video-modal-sub {
+  font-size: 13px;
+  color: #5A6E65;
+  font-weight: 600;
+  margin: 0 0 14px;
+}
+
+.video-modal-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.video-modal-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border: 1px solid #D1DDD7;
+  border-radius: 12px;
+  background: #fff;
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+}
+
+.video-modal-item:active {
+  background: #F4F7F5;
+}
+
+.video-modal-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #006F3E;
+  color: #fff;
+  font-size: 16px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.video-modal-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.video-modal-nombre {
+  font-size: 14px;
+  font-weight: 800;
+  color: #0A1410;
+}
+
+.video-modal-idioma {
+  font-size: 12px;
+  font-weight: 600;
+  color: #5A6E65;
+}
+
+.video-modal-llamar {
+  font-size: 12px;
+  font-weight: 800;
+  color: #006F3E;
+  padding: 6px 14px;
+  border: 1.5px solid #006F3E;
+  border-radius: 8px;
+  flex-shrink: 0;
+}
+
+.video-modal-item.no-disponible {
+  opacity: 0.5;
+}
+
+.video-modal-item.no-disponible:active {
+  background: #fff;
+}
+
+.no-disponible-label {
+  color: #5A6E65 !important;
+  border-color: #D1DDD7 !important;
 }
 </style>

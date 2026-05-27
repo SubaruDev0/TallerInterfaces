@@ -1,0 +1,28 @@
+/* ============================================
+   Design Tokens — variables CSS del sistema
+   Uso: importar antes de style.css o en main.js
+   ============================================ */
+:root {
+  /* Fondo y superficies */
+  --color-bg: #f5f5f5;
+  --color-surface: #ffffff;
+
+  /* Colores de marca y estado */
+  --color-primary: #a62100;
+  --color-danger: #c62828;
+  --color-success: #2e7d32;
+
+  /* Texto */
+  --color-text: #1a1a1a;
+  --color-text-muted: #6b6b6b;
+
+  /* Radios de borde */
+  --radius-card: 16px;
+  --radius-button: 12px;
+
+  /* Sombras */
+  --shadow-base: 0 2px 8px rgba(0, 0, 0, 0.08);
+
+  /* Touch target mínimo WCAG 2.2 AA (88px) */
+  --tap-target: 88px;
+}

@@ -1,84 +1,120 @@
-/* ============================================
-   Variables y configuración base del proyecto
-   ============================================ */
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700;900&display=swap');
+
 :root {
-  --primary: #a62100;
-  --primary-light: #d35400;
-  --primary-dark: #7b1a00;
+  /* Preservación estricta de la Paleta Institucional */
+  --primary: #006F3E;
+  --primary-light: #008F50;
+  --primary-dark: #004D2B;
+  --danger: #EF4444;
   --surface: #ffffff;
-  --surface-2: #f5f5f5;
-  --on-surface: #1a1a1a;
-  --on-surface-muted: #6b6b6b;
-  --border: #e0e0e0;
-  --success: #2e7d32;
-  --warning: #f57c00;
-  --danger: #c62828;
+  --surface-2: #F4F7F5;
+  --on-surface: #0A1410;
+  --on-surface-muted: #5A6E65;
+  --border: #D1DDD7;
+  --success: #10B981;
+  --warning: #F59E0B;
   --shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
   --radius: 12px;
-
-  --font-main: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'DM Sans', system-ui, sans-serif;
-
-  font: 16px/1.5 var(--font-main);
-  color-scheme: light;
-  color: var(--on-surface);
-  background: var(--surface-2);
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  
+  /* Tipografía Oficial */
+  --font-main: 'Roboto', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
-body {
+/* RESET GENERAL CON CENTRADO */
+html, body {
   margin: 0;
-  min-height: 100vh;
-  overscroll-behavior-y: none;
-  user-select: none;
-  -webkit-tap-highlight-color: transparent;
-}
-
-/* Hereda el tap-highlight a todos los elementos, evitando el destello azul al tocar */
-*,
-*::before,
-*::after {
-  -webkit-tap-highlight-color: transparent;
-}
-
-/* ============================================
-   Transición fade entre rutas (250ms)
-   opacity 0 → 1 al entrar, 1 → 0 al salir
-   ============================================ */
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 250ms ease;
-}
-
-.fade-enter-from,
-.fade-leave-to {
-  opacity: 0;
-}
-
-/* ============================================
-   Estilos base para las vistas
-   ============================================ */
-#app {
-  min-height: 100vh;
+  padding: 0;
+  width: 100%;
+  height: 100vh;
+  background-color: #0f172a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  font-family: var(--font-main);
 }
 
 .page {
-  padding: 24px;
-  padding-bottom: 88px;
-  min-height: 100vh;
+  font-family: var(--font-main);
   box-sizing: border-box;
 }
 
-.page h1 {
-  margin: 0 0 8px;
-  font-size: 28px;
-  font-weight: 700;
-  color: var(--on-surface);
+/* UNIFICACIÓN RIGURUSA DEL APARTADO ESTÉTICO MÓVIL SPRINT 1 */
+.mobile-phone-frame,
+.page.contexto, 
+.page.exito, 
+.page.historial, 
+.page.perfil,
+.page.policia {
+  width: 450px !important;
+  min-width: 450px !important;
+  max-width: 450px !important;
+  height: 850px !important;
+  min-height: 850px !important;
+  max-height: 850px !important;
+  position: relative !important;
+  overflow: hidden !important;
+  background-color: var(--surface-2) !important;
+  border: 2px solid #1e293b !important;
+  border-radius: 44px !important;
+  box-sizing: border-box !important;
+  display: flex !important;
+  flex-direction: column !important;
+  margin: auto !important;
+  box-shadow:
+    0 0 0 3px #475569,
+    0 24px 80px rgba(0,0,0,0.35),
+    0 8px 20px rgba(0,0,0,0.12)
+  !important;
 }
 
-.page p {
-  margin: 0;
-  color: var(--on-surface-muted);
+.page *, .mobile-phone-frame * {
+  box-sizing: border-box;
+}
+
+/* Contención estricta para la calculadora */
+.safe-calculator-overlay-container {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  z-index: 2000 !important;
+  border-radius: 36px !important;
+  overflow: hidden !important;
+}
+
+/* Preservación de transiciones */
+.fade-enter-active, .fade-leave-active {
+  transition: opacity 0.2s ease;
+}
+.fade-enter-from, .fade-leave-to {
+  opacity: 0;
+}
+
+/* =============================================
+   RESPONSIVE: pantallas menores al chasis móvil
+   ============================================= */
+@media (max-width: 460px), (max-height: 860px) {
+  html, body {
+    align-items: flex-start;
+    justify-content: flex-start;
+    background-color: var(--surface-2);
+  }
+
+  .mobile-phone-frame,
+  .page.contexto,
+  .page.exito,
+  .page.historial,
+  .page.perfil,
+  .page.policia {
+    width: 100% !important;
+    min-width: 100% !important;
+    max-width: 100% !important;
+    height: 100dvh !important;
+    min-height: 100dvh !important;
+    max-height: 100dvh !important;
+    border: none !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+  }
 }

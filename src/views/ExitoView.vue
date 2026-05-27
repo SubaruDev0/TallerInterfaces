@@ -4,7 +4,6 @@ import { useRouter, onBeforeRouteLeave } from 'vue-router'
 import { useAlertStore } from '../stores/alertStore'
 import { useCasosStore } from '../stores/casosStore'
 import { preguntasTerreno } from '../data/preguntasTerreno'
-import SafeCalculatorOverlay from '../components/SafeCalculatorOverlay.vue'
 
 const router = useRouter()
 const store = useAlertStore()
@@ -12,7 +11,6 @@ const casosStore = useCasosStore()
 
 const isOnline = ref(navigator.onLine)
 const casoId = ref(null)
-const mostrarCalculadora = ref(false)
 
 const updateOnlineStatus = () => {
   isOnline.value = navigator.onLine
@@ -38,6 +36,9 @@ onMounted(() => {
   preguntasTerreno.forEach(q => {
     mapaPreguntas[q.id] = q.pregunta_texto
   })
+  store.emergenciaSeleccionada?.preguntas?.forEach(q => {
+    mapaPreguntas[q.id] = q.texto
+  })
 
   const nuevoCaso = casosStore.crearCaso({
     victimRut: store.perfil.rut,
@@ -48,8 +49,8 @@ onMounted(() => {
     victimContactoTelefono: store.perfil.contacto_telefono || '',
     emergencia: store.emergenciaSeleccionada,
     contexto: {
-      ubicacion: store.ubicacion,
-      respuestas: { ...store.respuestas },
+      ubicacion: store.contextoSeleccionado?.ubicacion || '',
+      respuestas: { ...(store.contextoSeleccionado?.respuestas || {}) },
       preguntas: mapaPreguntas,
     },
   })
@@ -106,13 +107,11 @@ function volverHome() {
       Ver estado de mi denuncia
     </button>
 
-    <button class="footer-btn ocultar-btn" @click="mostrarCalculadora = true">
-      Ocultar
+    <button class="footer-btn ocultar-btn" @click="volverHome">
+      Volver al inicio
     </button>
   </div>
 </template>
-
-<SafeCalculatorOverlay v-model="mostrarCalculadora" />
 
 <style scoped>
 .exito {
@@ -122,7 +121,7 @@ function volverHome() {
   justify-content: center;
   text-align: center;
   transition: background-color 0.5s ease;
-  background-color: var(--surface);
+  background-color: #006F3E !important;
 }
 
 .exito.is-offline {
@@ -149,8 +148,8 @@ function volverHome() {
 }
 
 .online .icon-circle {
-  background-color: rgba(46, 125, 50, 0.1);
-  color: var(--success);
+  background-color: rgba(255, 255, 255, 0.15);
+  color: #ffffff;
 }
 
 .offline .icon-circle {
@@ -170,7 +169,7 @@ h1 {
 }
 
 .online h1 {
-  color: var(--success);
+  color: #ffffff;
 }
 
 .offline h1 {
@@ -180,8 +179,12 @@ h1 {
 p {
   font-size: 16px;
   line-height: 1.6;
-  color: var(--on-surface-muted);
+  color: #ffffff;
   max-width: 300px;
+}
+
+.online p {
+  opacity: 0.9;
 }
 
 .sms-badge {
@@ -206,10 +209,10 @@ p {
   max-width: 320px;
   margin-bottom: 40px;
   padding: 16px;
-  border: 2px solid var(--border);
+  border: 2px solid rgba(255, 255, 255, 0.3);
   border-radius: var(--radius);
-  background: var(--surface);
-  color: var(--on-surface);
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
   font-size: 16px;
   font-weight: 700;
   cursor: pointer;
@@ -218,12 +221,12 @@ p {
 
 .footer-btn:active {
   transform: scale(0.98);
-  background-color: var(--surface-2);
+  background-color: rgba(255, 255, 255, 0.2);
 }
 
 .ocultar-btn {
-  background: #222;
-  color: #fff;
-  border-color: #222;
+  background: #ffffff;
+  color: #006F3E;
+  border-color: #ffffff;
 }
 </style>

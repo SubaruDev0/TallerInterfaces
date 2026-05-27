@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, ref } from 'vue'
+import { onMounted, ref, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAlertStore } from '../stores/alertStore'
 import { emergencias } from '../data/emergencias'
@@ -8,10 +8,14 @@ import SafeCalculatorOverlay from '../components/SafeCalculatorOverlay.vue'
 
 const router = useRouter()
 const store = useAlertStore()
-const mostrarCalculadora = ref(false)
 
-// Al montar el Home, nos aseguramos de resetear cualquier estado previo.
-// Esto cumple con el criterio de aceptación de evitar fugas de estado al volver a /.
+const mostrarCalculadora = ref(false)
+const sidebarAbierto = ref(false)
+const presionando = ref(false)
+const escalaCortina = ref(0)
+let conteoTimer = null
+let escalaTimer = null
+
 onMounted(() => {
   store.resetAlerta()
 })
@@ -23,264 +27,407 @@ function handleSelect(id) {
     router.push({ name: 'contexto' })
   }
 }
+
+function iniciarPresionCortina(e) {
+  e.preventDefault()
+  presionando.value = true
+  escalaCortina.value = 0
+
+  // 4000ms / 16ms = 250 pasos en total para llegar a una escala de cobertura del chasis (~2500%)
+  const incremento = 2500 / (4000 / 16) 
+  
+  escalaTimer = setInterval(() => {
+    if (escalaCortina.value < 2500) {
+      escalaCortina.value += incremento
+    }
+  }, 16) // 60fps para fluidez total en el mockup
+
+  conteoTimer = setTimeout(() => {
+    clearInterval(escalaTimer)
+    clearTimeout(conteoTimer)
+    presionando.value = false
+    escalaCortina.value = 0
+    router.push({ name: 'exito' })
+  }, 4000)
+}
+
+function cancelarPresionCortina() {
+  if (presionando.value) {
+    presionando.value = false
+    escalaCortina.value = 0
+    clearTimeout(conteoTimer)
+    clearInterval(escalaTimer)
+  }
+}
+
+onUnmounted(() => {
+  clearTimeout(conteoTimer)
+  clearInterval(escalaTimer)
+})
 </script>
 
 <template>
-  <div class="page home">
-    <header class="home-header">
-      <h1>Emergencias</h1>
-      <router-link to="/victim/perfil" class="icon-btn" aria-label="Ir a perfil">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="12" cy="12" r="10" />
-          <circle cx="12" cy="10" r="3" />
-          <path d="M6.17 18a6 6 0 0 1 11.66 0" />
-        </svg>
-      </router-link>
-    </header>
+  <div class="mobile-phone-frame page home">
+    <div class="sidebar-drawer" :class="{ 'is-open': sidebarAbierto }">
+      <div class="sidebar-backdrop" @click="sidebarAbierto = false"></div>
+      <div class="sidebar-content">
+        <button class="close-drawer-btn" @click="sidebarAbierto = false">✕</button>
+        <nav class="sidebar-nav-visual">
+          <router-link to="/victim/perfil" @click="sidebarAbierto = false" class="drawer-visual-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+              <circle cx="12" cy="7" r="4" />
+            </svg>
+            <span class="visual-label">PERFIL</span>
+          </router-link>
+          <router-link to="/victim/historial" @click="sidebarAbierto = false" class="drawer-visual-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10" />
+              <polyline points="12 6 12 12 16 14" />
+            </svg>
+            <span class="visual-label">HISTORIAL</span>
+          </router-link>
+        </nav>
+      </div>
+    </div>
 
-    <!-- Botón de pánico principal -->
-    <button class="panic-card" aria-label="Botón de pánico, mantener presionado 4 segundos">
-      <div class="panic-left">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M10 5a2 2 0 1 1 4 0 7 7 0 0 1 4 6v3l2 2H4l2-2v-3a7 7 0 0 1 4-6z" />
-          <path d="M9 17v1a3 3 0 0 0 6 0v-1" />
-          <path d="M21 6.5A11.2 11.2 0 0 0 18 4" />
-          <path d="M3 6.5A11.2 11.2 0 0 1 6 4" />
-        </svg>
-        <div>
-          <div class="panic-title">Pánico</div>
-          <div class="panic-sub">Mantener presionado 4s</div>
+    <header class="app-top-header">
+      <div class="header-left-group">
+        <img
+          class="escudo-carabineros"
+          src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/46/Roundel_of_Carabineros_de_Chile.svg/250px-Roundel_of_Carabineros_de_Chile.svg.png"
+          alt="Carabineros de Chile"
+        />
+        <div class="brand-block">
+          <span class="brand-tag">Emergencia</span>
+          <h1>Carabineros</h1>
         </div>
       </div>
-      <svg class="panic-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M5 12h14" />
-        <path d="M15 8l4 4-4 4" />
-      </svg>
-    </button>
+      <button class="hamburger-menu-btn" @click="sidebarAbierto = true" aria-label="Abrir menú">
+        <div class="bar"></div>
+        <div class="bar"></div>
+        <div class="bar"></div>
+      </button>
+    </header>
 
-    <div class="section-title">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M12 3a12 12 0 0 0 8.5 3A12 12 0 0 1 12 21 12 12 0 0 1 3.5 6 12 12 0 0 0 12 3z" />
-      </svg>
-      ¿Qué sucede?
-    </div>
-
-    <!-- Mensaje si no hay datos de emergencia -->
-    <p v-if="emergencias.length === 0" class="error-msg">
-      No hay tipos de emergencia disponibles en este momento.
-    </p>
-
-    <!-- Rejilla de triaje con componente reutilizable -->
-    <div v-else class="emergency-grid">
-      <TriageCard
-        v-for="em in emergencias"
-        :key="em.id"
-        v-bind="em"
-        @select="handleSelect"
-      />
-    </div>
-
-    <div class="section-title">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <circle cx="12" cy="12" r="10" />
-        <path d="M12 6v6l4 2" />
-      </svg>
-      Última actividad
-    </div>
-
-    <router-link to="/victim/historial" class="alert-mini">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M12 3a12 12 0 0 0 8.5 3A12 12 0 0 1 12 21 12 12 0 0 1 3.5 6 12 12 0 0 0 12 3z" />
-      </svg>
-      <div class="a-info">
-        <div class="a-type">Violencia</div>
-        <div class="a-date">12 may 2026 - 14:32</div>
+    <main class="scrollable-triage-content">
+      <div class="triage-section-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <rect x="3" y="3" width="7" height="9" />
+          <rect x="14" y="3" width="7" height="5" />
+          <rect x="14" y="12" width="7" height="9" />
+          <rect x="3" y="16" width="7" height="5" />
+        </svg>
+        <span>Selecciona tu Emergencia</span>
       </div>
-      <div class="a-badge">Finalizada</div>
-    </router-link>
-    <button class="ocultar-mini" @click="mostrarCalculadora = true">
-      Ocultar
-    </button>
+
+      <div class="triage-scroll-grid">
+        <TriageCard :id="1" titulo="Violencia Intrafamiliar" icono="family" color="#006F3E" gif_lsch="/lsch/peligro.gif" @select="handleSelect" />
+        <TriageCard :id="2" titulo="Robo o Hurto" icono="robber" color="#006F3E" gif_lsch="/lsch/peligro.gif" @select="handleSelect" />
+        <TriageCard :id="3" titulo="Accidente Tránsito" icono="crash" color="#006F3E" gif_lsch="/lsch/peligro.gif" @select="handleSelect" />
+        <TriageCard :id="4" titulo="Agresión / Pelea" icono="fight" color="#006F3E" gif_lsch="/lsch/peligro.gif" @select="handleSelect" />
+        <TriageCard :id="5" titulo="Pérdida de Celular" icono="phone" color="#006F3E" gif_lsch="/lsch/peligro.gif" @select="handleSelect" />
+        <TriageCard :id="6" titulo="Incendio / Catástrofe" icono="fire" color="#006F3E" gif_lsch="/lsch/peligro.gif" @select="handleSelect" />
+      </div>
+
+      <button class="discreet-hide-shortcut" @click="mostrarCalculadora = true">
+         Modo Camuflaje Rápido
+      </button>
+    </main>
+
+    <footer class="app-fixed-footer">
+      <div class="footer-instruction-left">
+        <span class="f-title">PÁNICO</span>
+        <span class="f-sub">Mantén presionado por 4 segundos</span>
+      </div>
+      
+      <button 
+        class="panic-circular-trigger"
+        :class="{ 'is-pressing': presionando }"
+        @touchstart="iniciarPresionCortina"
+        @touchend="cancelarPresionCortina"
+        @touchcancel="cancelarPresionCortina"
+        @mousedown="iniciarPresionCortina"
+        @mouseup="cancelarPresionCortina"
+        @mouseleave="cancelarPresionCortina"
+      >
+        <span class="panic-bang-icon" :style="{ opacity: presionando ? 0 : 1 }">!</span>
+        <div 
+          class="panic-expansion-radial-curtain" 
+          :class="{ 'is-active': presionando }"
+          :style="{ transform: 'translate(-50%, -50%) scale(' + escalaCortina + '%)' }"
+        ></div>
+      </button>
+    </footer>
+
+    <SafeCalculatorOverlay v-model="mostrarCalculadora" />
   </div>
 </template>
 
-<SafeCalculatorOverlay v-model="mostrarCalculadora" />
-
 <style scoped>
-.home-header {
+.mobile-phone-frame {
+  width: 450px;
+  height: 100vh;
+  max-height: 850px;
+  position: relative;
+  overflow: hidden;
+  background-color: var(--surface-2);
+  border: 4px solid #334155;
+  border-radius: 40px;
+  box-sizing: border-box;
   display: flex;
-  justify-content: space-between;
+  flex-direction: column;
+}
+.sidebar-drawer {
+  position: absolute;
+  inset: 0;
+  z-index: 999;
+  pointer-events: none;
+}
+.sidebar-drawer.is-open {
+  pointer-events: auto;
+}
+.sidebar-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+.sidebar-drawer.is-open .sidebar-backdrop {
+  opacity: 1;
+}
+.sidebar-content {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 110px;
+  background: var(--surface);
+  transform: translateX(100%);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  flex-direction: column;
   align-items: center;
-  padding: 16px 0;
+  padding: 20px 12px;
+  box-sizing: border-box;
 }
-
-.home-header h1 {
-  margin: 0;
-  font-size: 24px;
-  font-weight: 800;
-  color: var(--on-surface);
+.sidebar-drawer.is-open .sidebar-content {
+  transform: translateX(0);
 }
-
-.icon-btn {
+.close-drawer-btn {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  background: none;
+  border: none;
+  font-size: 22px;
+  font-weight: bold;
+  color: var(--on-surface-muted);
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+}
+.sidebar-nav-visual {
   display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 28px;
+  margin-top: 48px;
+}
+.drawer-visual-item {
+  display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
+  color: var(--primary);
+  text-decoration: none;
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+}
+.drawer-visual-item:active {
+  opacity: 0.5;
+}
+.drawer-visual-item svg {
   width: 44px;
   height: 44px;
-  border-radius: 50%;
+  margin-bottom: 6px;
+}
+.visual-label {
+  font-size: 12px;
+  font-weight: 900;
   color: var(--on-surface);
-  text-decoration: none;
-  background: var(--surface-2);
-  transition: background-color 0.2s ease;
+  letter-spacing: 0.5px;
 }
-
-.icon-btn:active {
-  background-color: var(--border);
-}
-
-.icon-btn svg {
-  width: 24px;
-  height: 24px;
-}
-
-.panic-card {
+.app-top-header {
+  padding: 18px 20px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
   display: flex;
   justify-content: space-between;
   align-items: center;
-  width: 100%;
-  padding: 20px;
-  margin-bottom: 32px;
-  background: var(--primary);
-  color: #fff;
-  border: none;
-  border-radius: var(--radius);
-  cursor: pointer;
-  box-shadow: 0 8px 16px rgba(166, 33, 0, 0.25);
-  transition: all 0.2s ease;
+  flex-shrink: 0;
 }
 
-.panic-card:active {
-  transform: scale(0.98);
-  box-shadow: 0 4px 8px rgba(166, 33, 0, 0.3);
-}
-
-.panic-left {
+.header-left-group {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 12px;
 }
 
-.panic-left svg {
-  width: 32px;
-  height: 32px;
+.escudo-carabineros {
+  height: 36px;
+  width: auto;
+  display: block;
 }
-
-.panic-title {
-  font-size: 20px;
+.brand-block {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+}
+.brand-tag {
+  font-size: 11px;
+  text-transform: uppercase;
   font-weight: 800;
-  text-align: left;
+  color: var(--on-surface-muted);
 }
-
-.panic-sub {
-  font-size: 14px;
-  opacity: 0.9;
-  text-align: left;
+.brand-block h1 {
+  margin: 0;
+  font-size: 26px;
+  font-weight: 900;
+  color: var(--primary);
 }
-
-.panic-arrow {
+.hamburger-menu-btn {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
   width: 24px;
-  height: 24px;
+  height: 16px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
 }
-
-.section-title {
+.hamburger-menu-btn .bar {
+  width: 100%;
+  height: 3px;
+  background-color: var(--primary);
+  border-radius: 2px;
+}
+.scrollable-triage-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 48px 16px 12px 16px;
+  box-sizing: border-box;
+}
+.triage-section-title {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 14px;
-  font-weight: 700;
+  margin-bottom: 14px;
   color: var(--on-surface-muted);
+  font-size: 12px;
+  font-weight: 800;
   text-transform: uppercase;
-  letter-spacing: 1px;
-  margin-bottom: 16px;
 }
-
-.section-title svg {
-  width: 18px;
-  height: 18px;
+.triage-section-title svg {
+  width: 16px;
+  height: 16px;
+  color: var(--primary);
 }
-
-.emergency-grid {
+.triage-scroll-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 16px;
-  margin-bottom: 32px;
+  gap: 12px;
 }
-
-.error-msg {
-  padding: 24px;
-  text-align: center;
-  color: var(--danger);
-  background: rgba(198, 40, 40, 0.05);
-  border-radius: var(--radius);
-  font-weight: 600;
+.app-fixed-footer {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 80px;
+  background-color: var(--primary);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 24px;
+  z-index: 100;
+  box-sizing: border-box;
 }
-
-.alert-mini {
+.footer-instruction-left {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+  color: #ffffff;
+}
+.f-title {
+  font-size: 16px;
+  font-weight: 900;
+  letter-spacing: 0.5px;
+}
+.f-sub {
+  font-size: 11px;
+  opacity: 0.85;
+}
+.panic-circular-trigger {
+  width: 76px;
+  height: 76px;
+  border-radius: 50%;
+  background-color: var(--danger);
+  border: 4px solid #ffffff;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.3);
   display: flex;
   align-items: center;
-  gap: 16px;
-  padding: 16px;
-  background: var(--surface-2);
-  border-radius: var(--radius);
-  text-decoration: none;
-  color: var(--on-surface);
-  transition: transform 0.2s ease;
+  justify-content: center;
+  cursor: pointer;
+  position: relative;
+  bottom: 18px;
+  right: 4px;
+  outline: none;
+  transition: transform 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  z-index: 101;
+  user-select: none;
+  overflow: visible;
+  -webkit-tap-highlight-color: transparent;
 }
-
-.alert-mini:active {
-  transform: scale(0.99);
+.panic-circular-trigger.is-pressing {
+  transform: scale(1.1);
+  box-shadow: 0 0 0 12px rgba(239, 68, 68, 0.35);
 }
-
-.alert-mini svg {
-  width: 24px;
-  height: 24px;
-  color: var(--on-surface-muted);
+.panic-bang-icon {
+  color: #ffffff;
+  font-size: 36px;
+  font-weight: 900;
+  z-index: 103;
+  transition: opacity 0.1s ease;
 }
-
-.ocultar-mini {
-  margin-top: 16px;
+.panic-expansion-radial-curtain {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 76px;
+  height: 76px;
+  border-radius: 50%;
+  background-color: var(--danger);
+  z-index: 102;
+  pointer-events: none;
+  opacity: 0;
+  transition: transform 0.16s linear, opacity 0.1s ease;
+}
+.panic-expansion-radial-curtain.is-active {
+  opacity: 1;
+}
+.discreet-hide-shortcut {
+  margin-top: 20px;
   width: 100%;
   padding: 12px;
-  border: 2px solid #222;
+  border: 2px dashed var(--border);
   border-radius: var(--radius);
-  background: #222;
-  color: #fff;
-  font-size: 14px;
-  font-weight: 800;
-  cursor: pointer;
-}
-
-.a-info {
-  flex: 1;
-  text-align: left;
-}
-
-.a-type {
-  font-size: 16px;
-  font-weight: 700;
-}
-
-.a-date {
-  font-size: 13px;
+  background: var(--surface);
   color: var(--on-surface-muted);
-}
-
-.a-badge {
   font-size: 12px;
   font-weight: 700;
-  padding: 6px 12px;
-  border-radius: 20px;
-  background: rgba(46, 125, 50, 0.1);
-  color: var(--success);
+  margin-bottom: 20px;
 }
+
 </style>

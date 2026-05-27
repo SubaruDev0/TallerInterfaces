@@ -6,6 +6,7 @@ import HistorialView from '../views/HistorialView.vue'
 import PerfilView from '../views/PerfilView.vue'
 import CentralView from '../views/CentralView.vue'
 import PoliciaView from '../views/PoliciaView.vue'
+import VideollamadaView from '../views/VideollamadaView.vue'
 
 const routes = [
   { path: '/', redirect: '/victim' },
@@ -20,6 +21,7 @@ const routes = [
   { path: '/victim/perfil', name: 'perfil', component: PerfilView },
   { path: '/central', name: 'central', component: CentralView },
   { path: '/policia', name: 'policia', component: PoliciaView },
+  { path: '/videollamada', name: 'videollamada', component: VideollamadaView },
 ]
 
 const router = createRouter({

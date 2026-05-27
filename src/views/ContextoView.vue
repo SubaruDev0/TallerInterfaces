@@ -2,446 +2,348 @@
 import { computed, ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAlertStore } from '../stores/alertStore'
-import { preguntasTerreno } from '../data/preguntasTerreno'
 
 const router = useRouter()
 const store = useAlertStore()
 
-if (!store.emergenciaSeleccionada) {
-  router.replace({ name: 'home' })
-}
+const respuestas = ref({})
+
+const currentStep = ref(0)
+const respuestaSeleccionada = ref(null)
+
+const emergenciaActual = computed(() => store.emergenciaSeleccionada || { titulo: 'Emergencia', preguntas: [] })
+const preguntaActual = computed(() => emergenciaActual.value.preguntas?.[currentStep.value] || null)
+const esUltimoPaso = computed(() => currentStep.value === emergenciaActual.value.preguntas.length - 1)
 
 onMounted(() => {
-  if (!store.ubicacion && store.perfil.direccion) {
-    store.setUbicacion(store.perfil.direccion)
+  if (!store.emergenciaSeleccionada) {
+    router.push('/victim')
   }
 })
 
-const c = computed(() => store.emergenciaSeleccionada?.color || '#a62100')
-
-const preguntasCategoria = computed(() => {
-  if (!store.emergenciaSeleccionada) return []
-  return preguntasTerreno.filter(
-    p => p.categoria === store.emergenciaSeleccionada.titulo
-  )
-})
-
-const pregunta = computed(() =>
-  preguntasCategoria.value[store.preguntaActual] || null
-)
-
-const totalPreguntas = computed(() => preguntasCategoria.value.length)
-
-// mapa: id global → índice local (1-based)
-const indiceLocal = computed(() => {
-  const m = {}
-  preguntasCategoria.value.forEach((q, i) => {
-    m[q.id] = i + 1
-  })
-  return m
-})
-
-const historial = ref([0])
-
-function responder(opcion) {
-  if (!pregunta.value) return
-  store.setRespuesta(pregunta.value.id, opcion)
-  const p = pregunta.value
-  const salto = p.saltos?.[opcion] ?? p.siguiente
-  if (salto) {
-    const idx = preguntasCategoria.value.findIndex(q => q.id === salto)
-    if (idx !== -1) {
-      store.setPreguntaActual(idx)
-      historial.value.push(idx)
-      return
-    }
-  }
-  const sig = store.preguntaActual + 1
-  if (sig < totalPreguntas.value) {
-    store.setPreguntaActual(sig)
-    historial.value.push(sig)
-  } else {
-    store.setWizardStep(1)
+function seleccionarRespuesta(opcion) {
+  respuestaSeleccionada.value = opcion
+  if (preguntaActual.value) {
+    respuestas.value[preguntaActual.value.id] = opcion
   }
 }
 
-function volver() {
-  if (store.wizardStep === 1) {
-    store.setWizardStep(0)
-    return
-  }
-  if (historial.value.length > 1) {
-    historial.value.pop()
-    store.setPreguntaActual(historial.value[historial.value.length - 1])
-  } else {
-    router.back()
-  }
+function pasoAnterior() {
+  if (currentStep.value <= 0) return
+  currentStep.value--
+  respuestaSeleccionada.value = respuestas.value[emergenciaActual.value.preguntas[currentStep.value]?.id] ?? null
 }
 
-  function enviarAlerta() {
+function handleAvanzarFlujo() {
+  const preguntaId = emergenciaActual.value?.preguntas?.[currentStep.value]?.id
+  if (!preguntaId || !respuestas.value[preguntaId]) return
+
+  const preguntas = emergenciaActual.value?.preguntas || []
+  const totalPreguntas = preguntas.length
+
+  if (currentStep.value >= totalPreguntas - 1) {
     store.setContexto({
       ubicacion: store.ubicacion,
-      respuestas: { ...store.respuestas },
+      respuestas: { ...respuestas.value }
     })
     router.push({ name: 'exito' })
+  } else {
+    currentStep.value++
   }
+}
 </script>
 
 <template>
-  <div class="ctx" :style="{ '--c': c }">
-    <header class="top">
-      <button class="top-back" @click="volver" aria-label="Volver">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M19 12H5" />
-          <path d="M12 19l-7-7 7-7" />
+  <div class="page contexto mobile-triage-container">
+    <header class="triage-header">
+      <button class="back-btn" @click="router.push('/victim')" aria-label="Volver">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <polyline points="15 18 9 12 15 6"></polyline>
         </svg>
       </button>
-
-      <template v-if="store.wizardStep === 0">
-        <span class="top-tit">Pregunta {{ store.preguntaActual + 1 }}/{{ totalPreguntas }}</span>
-        <div class="dots">
-          <div
-            v-for="i in totalPreguntas"
-            :key="i"
-            class="dot"
-            :class="{
-              full: i - 1 < store.preguntaActual,
-              cur: i - 1 === store.preguntaActual
-            }"
-          ></div>
-        </div>
-      </template>
-
-      <template v-else>
-        <span class="top-tit">Revisar y enviar</span>
-        <div class="dots">
-          <div
-            v-for="i in totalPreguntas"
-            :key="i"
-            class="dot full"
-          ></div>
-        </div>
-      </template>
+      <div class="header-center-title">
+        <span class="sub-dept">Carabineros de Chile</span>
+        <h1>{{ emergenciaActual.titulo }}</h1>
+      </div>
+      <img
+        class="escudo-carabineros"
+        src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/46/Roundel_of_Carabineros_de_Chile.svg/250px-Roundel_of_Carabineros_de_Chile.svg.png"
+        alt="Carabineros de Chile"
+      />
     </header>
 
-    <div class="body">
-      <transition name="s" mode="out-in">
-        <div v-if="store.wizardStep === 0 && pregunta" :key="'q' + pregunta.id" class="q">
-          <div class="q-vid">
-            <img :src="pregunta.gif_lsch" alt="LSCh" />
-          </div>
-
-          <p class="q-txt">{{ pregunta.pregunta_texto }}</p>
-
-          <div class="q-opts">
-            <button
-              v-for="op in pregunta.opciones"
-              :key="op"
-              class="q-opt"
-              @click="responder(op)"
-            >
-              <div class="q-opt-gif">
-                <img :src="pregunta.gif_lsch" :alt="op" />
-              </div>
-              <span class="q-opt-lbl">{{ op }}</span>
-            </button>
-          </div>
-        </div>
-      </transition>
-
-      <div v-if="store.wizardStep === 1" class="rv">
-        <div class="rv-s">
-          <h3>Ubicación</h3>
-          <input
-            :value="store.ubicacion"
-            @input="store.setUbicacion($event.target.value)"
-            type="text" placeholder="Av. Principal #123"
-            class="rv-inp"
+    <main class="triage-body-scroll">
+      <template v-if="emergenciaActual.preguntas[currentStep]">
+        <div class="question-visual-box">
+          <img
+            v-if="emergenciaActual.preguntas[currentStep]?.gif || emergenciaActual.preguntas[currentStep]?.gif_lsch"
+            :src="emergenciaActual.preguntas[currentStep]?.gif || emergenciaActual.preguntas[currentStep]?.gif_lsch"
+            alt="Seña de la pregunta"
+            class="triage-main-gif"
           />
+          <h2 class="question-text-title">{{ emergenciaActual.preguntas[currentStep]?.texto }}</h2>
         </div>
 
-        <div v-if="Object.keys(store.respuestas).length" class="rv-s">
-          <h3>Respuestas</h3>
-          <div v-for="(opt, pid) in store.respuestas" :key="pid" class="rv-r">
-            <div class="rv-q">
-              <img :src="preguntasCategoria.find(p => p.id === Number(pid))?.gif_lsch" alt="LSCh" />
-            </div>
-            <div class="rv-a">
-              <img :src="preguntasCategoria.find(p => p.id === Number(pid))?.gif_lsch" alt="Respuesta" />
-              <span>{{ opt }}</span>
-            </div>
-          </div>
+        <div class="options-media-grid">
+          <button
+            v-for="(opcion, index) in emergenciaActual.preguntas[currentStep]?.opciones"
+            :key="index"
+            type="button"
+            class="option-card-button"
+            :class="{ 'is-selected': respuestas[emergenciaActual.preguntas[currentStep].id] === (opcion.texto || opcion) }"
+            @click="respuestas[emergenciaActual.preguntas[currentStep].id] = (opcion.texto || opcion)"
+          >
+            <img
+              :src="opcion.gif || opcion.gif_lsch || emergenciaActual.preguntas[currentStep]?.opciones_gifs?.[index] || emergenciaActual.preguntas[currentStep]?.gif || emergenciaActual.preguntas[currentStep]?.gif_lsch"
+              alt="Seña de la opción"
+              class="option-button-gif"
+            />
+            <span class="option-card-label">{{ opcion.texto || opcion }}</span>
+          </button>
         </div>
 
-        <button class="btn btn-s" @click="enviarAlerta">
-          Enviar alerta
-        </button>
-      </div>
-    </div>
+        <div class="triage-navigation-footer">
+          <button
+            v-if="currentStep > 0"
+            class="nav-btn-back"
+            @click="pasoAnterior"
+          >
+            <svg viewBox="0 0 320 512" fill="currentColor" stroke="none" style="width:20px;height:20px;display:block">
+              <path d="M9.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l192 192c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L77.3 256 246.6 86.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-192 192z" />
+            </svg>
+          </button>
+          <button
+            v-if="!esUltimoPaso"
+            class="nav-btn-next"
+            :disabled="!respuestas[emergenciaActual.preguntas[currentStep]?.id]"
+            @click="handleAvanzarFlujo"
+          >
+            <svg viewBox="0 0 320 512" fill="currentColor" stroke="none" style="width:20px;height:20px;display:block">
+              <path d="M310.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-192 192c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L242.7 256 73.4 86.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l192 192z" />
+            </svg>
+          </button>
+          <button
+            v-else
+            class="nav-btn-submit"
+            :disabled="!respuestas[emergenciaActual.preguntas[currentStep]?.id]"
+            @click="handleAvanzarFlujo"
+          >
+            <svg viewBox="0 0 448 512" fill="currentColor" stroke="none" style="width:20px;height:20px;display:block">
+              <path d="M438.6 105.4c12.5 12.5 12.5 32.8 0 45.3l-256 256c-12.5 12.5-32.8 12.5-45.3 0l-128-128c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0L160 338.7 393.4 105.4c12.5-12.5 32.8-12.5 45.3 0z" />
+            </svg>
+          </button>
+        </div>
+      </template>
+    </main>
   </div>
 </template>
 
 <style scoped>
-.ctx {
-  height: 100dvh;
+.mobile-triage-container {
   display: flex;
   flex-direction: column;
-  background: #fafafa;
+  height: 100%;
+  width: 100%;
+  background-color: #F4F7F5;
+  font-family: 'Roboto', sans-serif;
 }
 
-/* top */
-.top {
+.triage-header {
+  height: 68px;
+  background-color: #006F3E;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 16px;
+  color: #ffffff;
+}
+
+.back-btn {
+  background: none;
+  border: none;
+  color: #ffffff;
+  cursor: pointer;
+  padding: 6px;
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 8px 14px;
-  background: #fff;
-  border-bottom: 2px solid #eee;
-  flex-shrink: 0;
+}
+.back-btn svg {
+  width: 26px;
+  height: 26px;
 }
 
-.top-back {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  border: none;
-  background: transparent;
-  color: #222;
+.header-center-title {
+  text-align: center;
+}
+.sub-dept {
+  font-size: 10px;
+  text-transform: uppercase;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+  opacity: 0.85;
+  display: block;
+}
+.header-center-title h1 {
+  margin: 2px 0 0 0;
+  font-size: 16px;
+  font-weight: 900;
+}
+.escudo-carabineros {
+  height: 34px;
+  width: auto;
+  display: block;
+  filter: drop-shadow(0 0 1px rgba(255,255,255,0.5));
+}
+
+.triage-body-scroll {
+  flex: 1;
+  overflow-y: auto;
+  box-sizing: border-box;
+}
+
+.question-visual-box {
+  background-color: #ffffff;
+  border: 1px solid #D1DDD7;
+  border-radius: 12px;
+  padding: 16px;
+  margin: 16px;
+  text-align: center;
+}
+.question-visual-box img, .question-visual-box video {
+  max-width: 100%;
+  height: auto;
+  border-radius: 8px;
+  margin-bottom: 12px;
+}
+.question-text-title {
+  font-size: 15px;
+  font-weight: 900;
+  color: #0A1410;
+  line-height: 1.4;
+}
+
+.options-media-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  padding: 0 16px;
+  margin-bottom: 24px;
+}
+
+.option-card-button {
+  background: #ffffff;
+  border: 2px solid #D1DDD7;
+  border-radius: 12px;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
-  flex-shrink: 0;
+  transition: border-color 0.2s, background-color 0.2s;
+  box-sizing: border-box;
+}
+
+.option-card-button.is-selected, .option-card-button:active {
+  border-color: #006F3E !important;
+  background-color: rgba(0, 111, 62, 0.05) !important;
+}
+
+.option-card-button img {
+  width: 100%;
+  height: auto;
+  max-height: 100px;
+  object-fit: cover;
+  border-radius: 6px;
+  margin-bottom: 8px;
+}
+
+.option-card-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: #0A1410;
+  text-align: center;
+}
+
+.triage-navigation-footer {
+  display: flex;
+  gap: 12px;
+  padding: 0 16px;
+  margin-bottom: 44px;
+  justify-content: center;
+}
+
+.nav-btn-back {
+  width: 48px;
+  height: 48px;
+  flex: none;
+  padding: 0;
+  background-color: #ffffff;
+  color: #5A6E65;
+  border: 2px solid #D1DDD7;
+  border-radius: 10px;
+  cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-.top-back svg {
-  width: 18px;
-  height: 18px;
-}
-
-.top-tit {
-  font-size: 13px;
-  font-weight: 800;
-  color: var(--c);
-  white-space: nowrap;
-  flex-shrink: 0;
-}
-
-.dots {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  flex: 1;
-  justify-content: flex-end;
-}
-
-.dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: #ddd;
-  flex-shrink: 0;
-  transition: all 0.2s ease;
-}
-
-.dot.full {
-  background: var(--c);
-  opacity: 0.45;
-}
-
-.dot.cur {
-  background: var(--c);
-  opacity: 1;
-  transform: scale(1.3);
-  box-shadow: 0 0 0 2px color-mix(in srgb, var(--c) 18%, transparent);
-}
-
-/* body */
-.body {
-  flex: 1;
-  overflow-y: auto;
-  padding: 8px 14px 20px;
-  -webkit-overflow-scrolling: touch;
-}
-
-/* question */
-.q {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.q-vid {
-  position: relative;
-  width: 100%;
-  border-radius: 14px;
-  overflow: hidden;
-  background: #1a1a1a;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.05);
-}
-
-.q-vid img {
-  width: 100%;
-  display: block;
-  max-height: 28vh;
-  object-fit: contain;
-}
-
-.q-txt {
-  font-size: 17px;
-  font-weight: 700;
-  color: #222;
-  text-align: center;
-  margin: 0;
-  line-height: 1.3;
-}
-
-.q-opts {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 6px;
-}
-
-.q-opt {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-  padding: 0;
+.nav-btn-next, .nav-btn-submit {
+  background-color: #006F3E;
+  color: #ffffff;
   border: none;
-  border-radius: 12px;
-  background: #fff;
-  cursor: pointer;
-  transition: transform 0.1s ease;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
-  overflow: hidden;
-}
-
-.q-opt:active {
-  transform: scale(0.95);
-}
-
-.q-opt-gif {
-  width: 100%;
-  aspect-ratio: 1;
-  overflow: hidden;
-  background: #f0f0f0;
-}
-
-.q-opt-gif img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-}
-
-.q-opt-lbl {
-  font-size: 13px;
-  font-weight: 700;
-  color: #222;
-  padding: 0 4px 6px;
-}
-
-/* review */
-.rv {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  padding-top: 4px;
-}
-
-.rv-s h3 {
-  font-size: 10px;
-  font-weight: 800;
-  color: #aaa;
-  text-transform: uppercase;
-  letter-spacing: 1.5px;
-  margin: 0 0 4px;
-}
-
-.rv-inp {
-  width: 100%;
-  padding: 12px;
-  border: 2px solid #ddd;
-  border-radius: 12px;
-  font-size: 15px;
-  font-family: inherit;
-  color: #222;
-  background: #fff;
-  transition: border-color 0.2s ease;
-  box-sizing: border-box;
-}
-
-.rv-inp:focus {
-  outline: none;
-  border-color: var(--c);
-}
-
-.rv-r {
-  display: grid;
-  grid-template-columns: 64px 1fr;
-  align-items: center;
-  gap: 10px;
-  padding: 8px 0;
-  border-bottom: 1px solid #eee;
-}
-
-.rv-q img {
-  width: 64px;
-  height: 64px;
-  object-fit: cover;
   border-radius: 10px;
-  background: #1a1a1a;
-}
-
-.rv-a {
+  cursor: pointer;
+  width: 48px;
+  height: 48px;
+  flex: none;
+  padding: 0;
   display: flex;
   align-items: center;
-  gap: 10px;
+  justify-content: center;
+  transition: opacity 0.2s;
 }
 
-.rv-a img {
-  width: 44px;
-  height: 44px;
+.nav-btn-next:disabled,
+.nav-btn-submit:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+
+.contexto, .mobile-triage-container {
+  font-family: 'Roboto', sans-serif !important;
+  background-color: #F4F7F5 !important;
+}
+
+.triage-header, .header-institucional {
+  background-color: #006F3E !important;
+  color: #ffffff !important;
+}
+
+.btn-siguiente, .btn-enviar, button[type="submit"], .triage-navigation-footer {
+  margin-bottom: 44px !important;
+}
+
+.question-visual-box img, .options-media-grid img, .triage-accessible-card img {
+  max-width: 100% !important;
+  border-radius: 8px !important;
   object-fit: cover;
+}
+
+.triage-main-gif {
+  width: 100% !important;
+  max-height: 200px !important;
+  object-fit: cover !important;
   border-radius: 8px;
-  background: #1a1a1a;
+  margin-bottom: 12px;
 }
 
-.rv-a span {
-  font-size: 13px;
-  font-weight: 700;
-  color: #222;
+.option-button-gif {
+  width: 100% !important;
+  height: 90px !important;
+  object-fit: cover !important;
+  border-radius: 6px;
+  margin-bottom: 6px;
 }
-
-/* buttons */
-.btn {
-  width: 100%;
-  padding: 14px 20px;
-  border: none;
-  border-radius: 12px;
-  background: var(--c);
-  color: #fff;
-  font-size: 15px;
-  font-weight: 800;
-  cursor: pointer;
-  transition: transform 0.1s ease;
-}
-
-.btn:active {
-  transform: scale(0.97);
-}
-
-.btn-s {
-  margin-top: 4px;
-  padding: 15px 20px;
-  font-size: 16px;
-  box-shadow: 0 4px 16px color-mix(in srgb, var(--c) 25%, transparent);
-}
-
-/* transition */
-.s-enter-active { transition: all 0.2s ease-out; }
-.s-leave-active { transition: all 0.12s ease-in; }
-.s-enter-from { opacity: 0; transform: translateX(24px); }
-.s-leave-to { opacity: 0; transform: translateX(-24px); }
 </style>
