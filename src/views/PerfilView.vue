@@ -29,9 +29,14 @@ async function reverseGeocode(lat, lng) {
 }
 
 onMounted(() => {
-  if (store.perfil.rut) {
-    store.cargarPerfil()
-  }
+  store.cargarPerfil().then(() => {
+    if (!store.perfil.rut && localStorage.getItem('perfil')) {
+      try {
+        const data = JSON.parse(localStorage.getItem('perfil'))
+        store.actualizarPerfil(data)
+      } catch {}
+    }
+  })
   iniciarGPS()
 })
 
@@ -112,6 +117,13 @@ function iniciarGPS() {
 
       <div class="info-card">
         <div class="info-row">
+          <span class="info-label">Num. Documento</span>
+          <span class="info-value">{{ store.perfil.num_documento || '—' }}</span>
+        </div>
+      </div>
+
+      <div class="info-card">
+        <div class="info-row">
           <span class="info-label">Nombre</span>
           <span class="info-value">{{ store.perfil.nombre || '—' }}</span>
         </div>
@@ -125,7 +137,7 @@ function iniciarGPS() {
       </div>
 
       <div class="info-card">
-        <div class="info-row">
+        <div class="info-row-col">
           <span class="info-label">Dirección</span>
           <span class="info-value">{{ store.perfil.direccion || '—' }}</span>
         </div>
@@ -301,6 +313,12 @@ function iniciarGPS() {
   display: flex;
   justify-content: space-between;
   align-items: center;
+}
+
+.info-row-col {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 }
 
 .info-label {

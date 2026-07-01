@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Manual de Usuario - EMERGENCIA Carabineros</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', system-ui, sans-serif; background: #f0f4f2; color: #1a1a2e; line-height: 1.6; }
+    .container { max-width: 800px; margin: 0 auto; padding: 40px 20px; }
+    .header { text-align: center; margin-bottom: 48px; }
+    .header img { height: 80px; margin-bottom: 16px; }
+    .header h1 { font-size: 28px; color: #006F3E; margin-bottom: 8px; }
+    .header p { color: #6b7280; font-size: 14px; }
+    .step { background: #fff; border-radius: 16px; padding: 28px; margin-bottom: 20px; border: 1px solid #e5e7eb; }
+    .step-num { display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 50%; background: #006F3E; color: #fff; font-weight: 800; font-size: 14px; margin-right: 12px; flex-shrink: 0; }
+    .step-header { display: flex; align-items: center; margin-bottom: 16px; }
+    .step-header h2 { font-size: 18px; color: #0a1410; }
+    .step p { color: #374151; font-size: 14px; margin-bottom: 8px; }
+    .step ul { padding-left: 20px; margin-top: 8px; }
+    .step li { color: #374151; font-size: 14px; margin-bottom: 6px; }
+    .step .screenshot { width: 100%; border-radius: 12px; border: 1px solid #e5e7eb; margin-top: 12px; background: #f9fafb; padding: 16px; text-align: center; color: #9ca3af; font-size: 13px; }
+    .highlight { background: #ecfdf5; border-left: 4px solid #006F3E; padding: 12px 16px; border-radius: 0 8px 8px 0; margin: 12px 0; font-size: 13px; color: #065f46; }
+    .warning { background: #fefce8; border-left: 4px solid #f59e0b; padding: 12px 16px; border-radius: 0 8px 8px 0; margin: 12px 0; font-size: 13px; color: #92400e; }
+    .section-divider { text-align: center; margin: 40px 0 24px; }
+    .section-divider h3 { font-size: 20px; color: #006F3E; display: inline-flex; align-items: center; gap: 10px; }
+    .section-divider h3::before, .section-divider h3::after { content: ''; width: 40px; height: 1px; background: #d1d5db; }
+    .route-table { width: 100%; border-collapse: collapse; margin-top: 12px; }
+    .route-table th { background: #f3f4f6; padding: 8px 12px; text-align: left; font-size: 12px; font-weight: 700; color: #374151; text-transform: uppercase; }
+    .route-table td { padding: 8px 12px; border-bottom: 1px solid #e5e7eb; font-size: 13px; }
+    .badge { display: inline-block; padding: 2px 8px; border-radius: 6px; font-size: 11px; font-weight: 700; }
+    .badge-green { background: #d1fae5; color: #065f46; }
+    .badge-blue { background: #dbeafe; color: #1e40af; }
+    .badge-yellow { background: #fef3c7; color: #92400e; }
+    footer { text-align: center; margin-top: 48px; padding: 24px; color: #9ca3af; font-size: 12px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/46/Roundel_of_Carabineros_de_Chile.svg/250px-Roundel_of_Carabineros_de_Chile.svg.png" alt="Carabineros">
+      <h1>EMERGENCIA</h1>
+      <p>Manual de Usuario — Aplicacion de Emergencia para Personas Sordas</p>
+    </div>
+
+    <!-- PASO 1: Registro -->
+    <div class="step">
+      <div class="step-header">
+        <span class="step-num">1</span>
+        <h2>Registro de Usuario</h2>
+      </div>
+      <p>Al abrir la app por primera vez, debes completar tu registro con datos basicos:</p>
+      <ul>
+        <li><strong>RUT</strong>: Tu RUT chileno (ej: 12.345.678-9)</li>
+        <li><strong>Numero de documento</strong>: Numero de tu cedula de identidad</li>
+        <li><strong>Nombre completo</strong>: Como aparece en tu documento</li>
+        <li><strong>Telefono</strong>: Tu numero de celular con formato 5497 1044</li>
+        <li><strong>Contacto de emergencia</strong>: Nombre y telefono de un familiar o amigo de confianza</li>
+      </ul>
+      <div class="highlight">
+        El GPS se activa automaticamente al abrir la app. El punto verde en la parte superior indica que el GPS esta activo.
+      </div>
+      <p>Presiona <strong>REGISTRAR</strong> para continuar.</p>
+    </div>
+
+    <!-- PASO 2: Pantalla Principal -->
+    <div class="step">
+      <div class="step-header">
+        <span class="step-num">2</span>
+        <h2>Pantalla Principal - Boton de Panico</h2>
+      </div>
+      <p>La pantalla principal muestra un gran boton rojo con el simbolo <strong>!</strong>.</p>
+      <ul>
+        <li><strong>Mantener presionado 4 segundos</strong> para activar la alarma de emergencia</li>
+        <li>Suelta antes de 4 segundos para cancelar</li>
+        <li>En la parte inferior veras el estado del GPS: <strong>GPS Activo</strong> (verde) o <strong>GPS Inactivo</strong> (amarillo)</li>
+      </ul>
+      <div class="warning">
+        IMPORTANTE: La app esta disenada para personas sordas. Toda la interfaz usa iconos, colores y pictogramas para comunicarse sin depender de texto.
+      </div>
+    </div>
+
+    <!-- PASO 3: Menu lateral -->
+    <div class="step">
+      <div class="step-header">
+        <span class="step-num">3</span>
+        <h2>Menu Lateral</h2>
+      </div>
+      <p>Presiona el boton de menu (lineas horizontales) en la esquina superior derecha para acceder a:</p>
+      <ul>
+        <li><strong>PERFIL</strong>: Ver tus datos personales, contacto de emergencia y estado del GPS</li>
+        <li><strong>ESTADO</strong>: Ver el mapa con la ubicacion de tu caso activo y los policias en camino</li>
+        <li><strong>OCULTAR</strong>: Activa el modo camuflaje (calculadora) para que la app parezca una calculadora</li>
+      </ul>
+    </div>
+
+    <!-- PASO 4: Pantalla de Exito -->
+    <div class="step">
+      <div class="step-header">
+        <span class="step-num">4</span>
+        <h2>Despues de Activar la Alarma</h2>
+      </div>
+      <p>Al mantener presionado el boton por 4 segundos, veras una pantalla de confirmacion:</p>
+      <ul>
+        <li><strong>ENVIADA!</strong> - Tu alerta fue enviada a Carabineros</li>
+        <li><strong>EXPLICAR</strong> - Para comunicar que tipo de emergencia tienes (presionar para seleccionar)</li>
+        <li><strong>ESTADO</strong> - Para ver el mapa con los policias en camino</li>
+        <li><strong>INICIO</strong> - Volver a la pantalla principal</li>
+      </ul>
+      <div class="highlight">
+        En modo offline (sin senal), la alerta se enviara automaticamente cuando vuelva la conexion.
+      </div>
+    </div>
+
+    <!-- PASO 5: Explicar emergencia -->
+    <div class="step">
+      <div class="step-header">
+        <span class="step-num">5</span>
+        <h2>Explicar la Emergencia</h2>
+      </div>
+      <p>Si seleccionas <strong>EXPLICAR</strong>, veras una grilla de 6 tipos de emergencia:</p>
+      <ul>
+        <li><span class="badge badge-yellow">VIF</span> Violencia Intrafamiliar</li>
+        <li><span class="badge badge-blue">Robo</span> Hurto o robo</li>
+        <li><span class="badge badge-green">Accidente</span> Accidente de transito o laboral</li>
+        <li><span class="badge badge-yellow">Maltrato Animal</span> Maltrato a animales</li>
+        <li><span class="badge badge-blue">Incendio</span> Incendio o riesgo de incendio</li>
+        <li><span class="badge badge-green">Ambulancia</span> Emergencia medica</li>
+      </ul>
+      <p>Al seleccionar una, se abrira un wizard con preguntas paso a paso con <strong>GIFs de Lengua de Senas Chilena (LSCh)</strong> para que puedas comunicar tu situacion sin escribir.</p>
+    </div>
+
+    <!-- PASO 6: Estado del caso -->
+    <div class="step">
+      <div class="step-header">
+        <span class="step-num">6</span>
+        <h2>Seguimiento del Caso (Estado)</h2>
+      </div>
+      <p>En la pantalla de <strong>ESTADO</strong> puedes ver:</p>
+      <ul>
+        <li>El <strong>mapa</strong> con tu ubicacion (punto verde) y la ubicacion del policial asignado (punto amarillo)</li>
+        <li>El policial se muestra acercandose en tiempo real</li>
+        <li>El boton <strong>EXPLICAR</strong> para comunicar detalles adicionales</li>
+      </ul>
+      <div class="highlight">
+        Esta vista se actualiza automaticamente. No necesitas recargar la pagina.
+      </div>
+    </div>
+
+    <!-- PASO 7: Modo camuflaje -->
+    <div class="step">
+      <div class="step-header">
+        <span class="step-num">7</span>
+        <h2>Modo Camuflaje (Calculadora)</h2>
+      </div>
+      <p>Si presionas <strong>OCULTAR</strong> desde el menu o el footer, la app mostrara una calculadora.</p>
+      <p>Para volver a la app real, escribe <strong>133</strong> en la calculadora.</p>
+      <div class="warning">
+        Este modo esta disenado para situaciones donde no es seguro que la persona tenga la app de emergencia visible (por ejemplo, durante una situacion de VIF).
+      </div>
+    </div>
+
+    <!-- PASO 8: Perfil -->
+    <div class="step">
+      <div class="step-header">
+        <span class="step-num">8</span>
+        <h2>Mi Perfil</h2>
+      </div>
+      <p>Desde el menu lateral, selecciona <strong>PERFIL</strong> para ver:</p>
+      <ul>
+        <li>Tus datos personales (RUT, nombre, telefono, direccion)</li>
+        <li>Tu contacto de emergencia</li>
+        <li>El estado del GPS en tiempo real</li>
+      </ul>
+      <div class="highlight">
+        Los datos personales no se pueden editar por seguridad. La ubicacion se actualiza automaticamente.
+      </div>
+    </div>
+
+    <!-- Resumen de rutas -->
+    <div class="step">
+      <div class="step-header">
+        <span class="step-num">*</span>
+        <h2>Resumen de Pantallas</h2>
+      </div>
+      <table class="route-table">
+        <thead>
+          <tr><th>Pantalla</th><th>Funcion</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>Registro</strong></td><td>Crear cuenta con RUT y datos basicos</td></tr>
+          <tr><td><strong>Inicio</strong></td><td>Boton de panico (mantener 4 segundos)</td></tr>
+          <tr><td><strong>Exito</strong></td><td>Confirmacion de alerta enviada + acceso a explicar/estado</td></tr>
+          <tr><td><strong>Explicar</strong></td><td>Seleccionar tipo de emergencia con GIFs de LSCh</td></tr>
+          <tr><td><strong>Contexto</strong></td><td>Wizard de preguntas paso a paso sobre la emergencia</td></tr>
+          <tr><td><strong>Estado</strong></td><td>Mapa con ubicacion de policias en camino</td></tr>
+          <tr><td><strong>Perfil</strong></td><td>Datos personales y contacto de emergencia</td></tr>
+          <tr><td><strong>Calculadora</strong></td><td>Modo camuflaje (escribir 133 para salir)</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <footer>
+      EMERGENCIA — Carabineros de Chile<br>
+      Aplicacion disenada para personas sordas con interfaz visual, GIFs de LSCh y pictogramas
+    </footer>
+  </div>
+</body>
+</html>

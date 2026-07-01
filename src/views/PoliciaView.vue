@@ -1,11 +1,24 @@
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useCasosStore } from '../stores/casosStore'
 import { preguntasTerrenoCarabineros } from '../data/preguntasTerrenoCarabineros'
 
 const router = useRouter()
 const store = useCasosStore()
+
+let refreshInterval = null
+
+onMounted(() => {
+  store.cargarCasos()
+  refreshInterval = setInterval(() => {
+    store.cargarCasos()
+  }, 5000)
+})
+
+onUnmounted(() => {
+  if (refreshInterval) clearInterval(refreshInterval)
+})
 
 const casoSeleccionado = ref(null)
 
@@ -54,13 +67,6 @@ function cerrarCaso() {
   casoSeleccionado.value = null
 }
 
-function marcarComoLista() {
-  if (casoSeleccionado.value) {
-    store.completarCaso(casoSeleccionado.value.id, { nota: 'Cerrado en terreno por carabinero.' })
-    cerrarCaso()
-  }
-}
-
 function enviarPreguntas() {
   if (!casoParaSelector.value || preguntasSeleccionadas.value.length === 0) return
   store.enviarPreguntasTerreno(casoParaSelector.value.id, preguntasSeleccionadas.value)
@@ -75,16 +81,19 @@ const preguntasFiltradas = computed(() => {
 
 function badgeColor(estado) {
   if (estado === 'asignada') return '#1565c0'
+  if (estado === 'aceptada') return '#7b1fa2'
   if (estado === 'en_terreno') return '#f57c00'
   return '#2e7d32'
 }
 function badgeBg(estado) {
   if (estado === 'asignada') return '#e3f2fd'
+  if (estado === 'aceptada') return '#f3e5f5'
   if (estado === 'en_terreno') return '#fff3e0'
   return '#e8f5e9'
 }
 function badgeLabel(estado) {
   if (estado === 'asignada') return 'Asignado'
+  if (estado === 'aceptada') return 'Activo'
   if (estado === 'en_terreno') return 'En terreno'
   return 'Completado'
 }
@@ -150,11 +159,18 @@ function badgeLabel(estado) {
             {{ c.estado === 'en_terreno' ? 'Preguntar en terreno' : 'Preguntar a distancia' }}
           </button>
           <button
-            v-if="c.estado === 'asignada'"
+            v-if="c.estado === 'asignada' || c.estado === 'aceptada'"
             class="btn-terreno btn-llegada"
             @click="store.marcarEnTerreno(c.id)"
           >
-            Marcar "He llegado"
+            Llegué al lugar
+          </button>
+          <button
+            v-if="c.estado === 'en_terreno'"
+            class="btn-cerrar-card"
+            @click="store.completarCaso(c.id, { nota: 'Cerrado en terreno por carabinero.' })"
+          >
+            Cerrar caso
           </button>
         </div>
       </div>
@@ -191,6 +207,7 @@ function badgeLabel(estado) {
         </div>
       </div>
     </div>
+    </main>
 
     <!-- Modal Selector de Preguntas -->
     <div v-if="selectorAbierto && casoParaSelector" class="selector-mask" @click.self="cerrarSelector">
@@ -254,15 +271,6 @@ function badgeLabel(estado) {
             <div class="d-value">{{ casoSeleccionado.victimContactoNombre || '—' }}</div>
             <div class="d-sub">{{ casoSeleccionado.victimContactoTelefono || '—' }}</div>
           </div>
-          <div>
-            <span class="d-label">Contacto vía central</span>
-            <div class="d-value">{{ casoSeleccionado.contactoEstado === 'contactado' ? 'Contactado' : casoSeleccionado.contactoEstado === 'sin_respuesta' ? 'Sin respuesta' : '—' }}</div>
-            <div class="d-sub" v-if="casoSeleccionado.contactoNotas">{{ casoSeleccionado.contactoNotas }}</div>
-          </div>
-          <div>
-            <span class="d-label">Comisaría cercana</span>
-            <div class="d-value d-small">{{ casoSeleccionado.comisariaCercana || '—' }}</div>
-          </div>
           <div v-if="casoSeleccionado.serviciosExternos?.length">
             <span class="d-label">Servicios contactados</span>
             <div v-for="s in casoSeleccionado.serviciosExternos.filter(s => s.contactado)" :key="s.servicio" class="d-value d-small">
@@ -295,53 +303,46 @@ function badgeLabel(estado) {
           </div>
         </div>
         </div>
+      </div>
+    </div>
 
-        <!-- Footer -->
-        <div class="detalle-footer">
-          <button class="btn-cerrar-caso" @click="marcarComoLista">
-            Marcar como listo / cerrar caso
+    <button class="btn-videollamada" @click="videoModalAbierto = true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polygon points="23 7 16 12 23 17 23 7" />
+        <rect x="1" y="5" width="15" height="14" rx="2" ry="2" />
+      </svg>
+    </button>
+
+    <!-- Modal intérpretes -->
+    <div v-if="videoModalAbierto" class="video-modal-mask" @click.self="videoModalAbierto = false">
+      <div class="video-modal">
+        <div class="video-modal-head">
+          <span class="video-modal-icon"></span>
+          <h2>Video intérprete disponible</h2>
+          <button class="video-modal-cerrar" @click="videoModalAbierto = false">×</button>
+        </div>
+        <p class="video-modal-sub">Selecciona un intérprete para iniciar la videollamada:</p>
+        <div class="video-modal-lista">
+          <button
+            v-for="interprete in interpretesDisponibles"
+            :key="interprete.nombre"
+            class="video-modal-item"
+            :class="{ 'no-disponible': !interprete.disponible }"
+            :disabled="!interprete.disponible"
+            @click="interprete.disponible && llamarInterprete(interprete.nombre)"
+          >
+            <span class="video-modal-avatar">{{ interprete.nombre.charAt(0) }}</span>
+            <div class="video-modal-info">
+              <span class="video-modal-nombre">{{ interprete.nombre }}</span>
+              <span class="video-modal-idioma">{{ interprete.idioma }}</span>
+            </div>
+            <span class="video-modal-llamar" :class="{ 'no-disponible-label': !interprete.disponible }">
+              {{ interprete.disponible ? 'Llamar' : 'No disponible' }}
+            </span>
           </button>
         </div>
       </div>
     </div>
-      <button class="btn-videollamada" @click="videoModalAbierto = true">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <polygon points="23 7 16 12 23 17 23 7" />
-          <rect x="1" y="5" width="15" height="14" rx="2" ry="2" />
-        </svg>
-      </button>
-
-      <!-- Modal intérpretes -->
-      <div v-if="videoModalAbierto" class="video-modal-mask" @click.self="videoModalAbierto = false">
-        <div class="video-modal">
-          <div class="video-modal-head">
-            <span class="video-modal-icon"></span>
-            <h2>Video intérprete disponible</h2>
-            <button class="video-modal-cerrar" @click="videoModalAbierto = false">×</button>
-          </div>
-          <p class="video-modal-sub">Selecciona un intérprete para iniciar la videollamada:</p>
-          <div class="video-modal-lista">
-            <button
-              v-for="interprete in interpretesDisponibles"
-              :key="interprete.nombre"
-              class="video-modal-item"
-              :class="{ 'no-disponible': !interprete.disponible }"
-              :disabled="!interprete.disponible"
-              @click="interprete.disponible && llamarInterprete(interprete.nombre)"
-            >
-              <span class="video-modal-avatar">{{ interprete.nombre.charAt(0) }}</span>
-              <div class="video-modal-info">
-                <span class="video-modal-nombre">{{ interprete.nombre }}</span>
-                <span class="video-modal-idioma">{{ interprete.idioma }}</span>
-              </div>
-              <span class="video-modal-llamar" :class="{ 'no-disponible-label': !interprete.disponible }">
-                {{ interprete.disponible ? 'Llamar' : 'No disponible' }}
-              </span>
-            </button>
-          </div>
-        </div>
-      </div>
-    </main>
   </div>
 </template>
 
@@ -353,6 +354,8 @@ function badgeLabel(estado) {
   width: 100%;
   background-color: #F4F7F5;
   font-family: 'Roboto', sans-serif;
+  position: relative;
+  overflow: hidden;
 }
 
 .police-top-header {
@@ -544,8 +547,26 @@ function badgeLabel(estado) {
 
 .btn-terreno:active { background: #004D2B; }
 
+.btn-cerrar-card {
+  width: 100%;
+  padding: 11px;
+  border: 2px solid #dc2626;
+  border-radius: 12px;
+  background: #fff;
+  color: #dc2626;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+  margin-top: 8px;
+}
+
+.btn-cerrar-card:active {
+  background: #dc2626;
+  color: #fff;
+}
+
 .detalle-mask {
-  position: fixed;
+  position: absolute;
   inset: 0;
   background: rgba(0,0,0,0.4);
   display: flex;
@@ -577,30 +598,6 @@ function badgeLabel(estado) {
   padding: 0 16px 16px;
   overflow-y: auto;
   flex: 1;
-}
-
-.detalle-footer {
-  position: sticky;
-  bottom: 0;
-  background: #fff;
-  padding: 12px 16px;
-  border-top: 1px solid #D1DDD7;
-}
-
-.btn-cerrar-caso {
-  width: 100%;
-  padding: 14px;
-  border: none;
-  border-radius: 12px;
-  background: #006F3E;
-  color: #fff;
-  font-size: 15px;
-  font-weight: 800;
-  cursor: pointer;
-}
-
-.btn-cerrar-caso:active {
-  background: #004D2B;
 }
 
 .detalle-nota-op {
@@ -668,7 +665,12 @@ function badgeLabel(estado) {
   font-weight: 700;
 }
 
-.detalle-ctx,
+.detalle-ctx {
+  margin-top: 16px;
+  border-top: 2px solid #006F3E;
+  padding-top: 12px;
+}
+
 .detalle-terreno {
   margin-top: 16px;
   border-top: 1px solid #D1DDD7;
@@ -696,7 +698,7 @@ function badgeLabel(estado) {
 }
 
 .selector-mask {
-  position: fixed;
+  position: absolute;
   inset: 0;
   background: rgba(0,0,0,0.5);
   display: flex;

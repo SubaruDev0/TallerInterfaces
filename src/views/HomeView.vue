@@ -16,6 +16,7 @@ const presionando = ref(false)
 const escalaCortina = ref(0)
 const isLoading = ref(false)
 const tiempoPresion = ref(0)
+const mostrarEmergenciaEnProgreso = ref(false)
 let conteoTimer = null
 let escalaTimer = null
 let tiempoTimer = null
@@ -24,6 +25,7 @@ let gpsSocket = null
 
 onMounted(() => {
   alertStore.resetAlerta()
+  casosStore.cargarCasos()
   iniciarGPS()
 })
 
@@ -50,8 +52,27 @@ function iniciarGPS() {
   )
 }
 
-function iniciarPresionCortina(e) {
+async function iniciarPresionCortina(e) {
   e.preventDefault()
+
+  await casosStore.cargarCasos()
+  const rut = alertStore.perfil.rut
+  if (rut) {
+    const activos = casosStore.getCasosPorRut(rut).filter(c => {
+      if (c.estado === 'completada') return false
+      const edad = Date.now() - new Date(c.creadoEn).getTime()
+      if (edad > 10 * 60 * 1000) {
+        casosStore.completarCaso(c.id, { nota: 'Cerrado automaticamente por tiempo.' })
+        return false
+      }
+      return true
+    })
+    if (activos.length > 0) {
+      mostrarEmergenciaEnProgreso.value = true
+      return
+    }
+  }
+
   presionando.value = true
   escalaCortina.value = 0
   tiempoPresion.value = 0
@@ -106,7 +127,7 @@ async function enviarPanico() {
     victimTelefono: alertStore.perfil.telefono,
     victimContactoNombre: alertStore.perfil.contacto_nombre || '',
     victimContactoTelefono: alertStore.perfil.contacto_telefono || '',
-    emergencia: { id: 0, titulo: 'Panico' },
+    emergencia: { id: 0, titulo: 'Panico', gif_lsch: '/lsch/emergencia.gif' },
     contexto: {
       ubicacion: ubicacionTexto,
       respuestas: {},
@@ -128,8 +149,8 @@ async function enviarPanico() {
   router.push({ name: 'exito', query: { casoId: nuevoCaso.id } })
 }
 
-function irAHistorial() {
-  router.push({ name: 'historial' })
+function irAEstado() {
+  router.push({ name: 'estado' })
 }
 </script>
 
@@ -176,12 +197,12 @@ function irAHistorial() {
           <span>PERFIL</span>
         </router-link>
 
-        <router-link to="/victim/historial" class="sidebar-item" @click="menuAbierto = false">
+        <router-link to="/victim/estado" class="sidebar-item" @click="menuAbierto = false">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <circle cx="12" cy="12" r="10"/>
             <polyline points="12 6 12 12 16 14"/>
           </svg>
-          <span>HISTORIAL</span>
+          <span>ESTADO</span>
         </router-link>
 
         <button class="sidebar-item danger" @click="mostrarCalculadora = true; menuAbierto = false">
@@ -232,7 +253,7 @@ function irAHistorial() {
           <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
           <circle cx="12" cy="10" r="3"/>
         </svg>
-        <span>{{ alertStore.ubicacionNombre || alertStore.ubicacion || '...' }}</span>
+        <span>GPS {{ alertStore.ubicacion ? 'Activo' : 'Inactivo' }}</span>
       </div>
 
       <button class="ocultar-btn" @click="mostrarCalculadora = true" aria-label="Modo camuflaje">
@@ -245,6 +266,21 @@ function irAHistorial() {
     </footer>
 
     <SafeCalculatorOverlay v-model="mostrarCalculadora" />
+
+    <div v-if="mostrarEmergenciaEnProgreso" class="popup-mask" @click="mostrarEmergenciaEnProgreso = false">
+      <div class="popup-card" @click.stop>
+        <div class="popup-icono">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2.5" width="40" height="40">
+            <circle cx="12" cy="12" r="10"/>
+            <line x1="12" y1="8" x2="12" y2="12"/>
+            <line x1="12" y1="16" x2="12.01" y2="16"/>
+          </svg>
+        </div>
+        <h2>Emergencia en progreso</h2>
+        <p>Ya tienes una emergencia activa. Espera a que la policía la resuelva.</p>
+        <button class="popup-btn" @click="mostrarEmergenciaEnProgreso = false">Entendido</button>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -570,6 +606,61 @@ function irAHistorial() {
 
 .panic-progress.active {
   opacity: 0.35;
+}
+
+.popup-mask {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  padding: 20px;
+}
+
+.popup-card {
+  background: white;
+  border-radius: 20px;
+  padding: 32px 24px;
+  text-align: center;
+  max-width: 300px;
+  width: 100%;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+}
+
+.popup-icono {
+  margin-bottom: 16px;
+}
+
+.popup-card h2 {
+  font-size: 18px;
+  font-weight: 800;
+  color: #1a1a1a;
+  margin: 0 0 8px;
+}
+
+.popup-card p {
+  font-size: 14px;
+  color: #666;
+  margin: 0 0 24px;
+  line-height: 1.4;
+}
+
+.popup-btn {
+  width: 100%;
+  padding: 14px;
+  border: none;
+  border-radius: 12px;
+  background: #1a1a1a;
+  color: white;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.popup-btn:active {
+  opacity: 0.8;
 }
 
 .home-footer {

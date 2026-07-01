@@ -19,8 +19,8 @@ function seleccionarEmergencia(id) {
   }
 }
 
-function irAHistorial() {
-  router.push({ name: 'historial' })
+function irAEstado() {
+  router.push({ name: 'estado' })
 }
 </script>
 
@@ -67,12 +67,12 @@ function irAHistorial() {
           <span>PERFIL</span>
         </div>
 
-        <div class="sidebar-item" @click="irAHistorial(); menuAbierto = false">
+        <div class="sidebar-item" @click="irAEstado(); menuAbierto = false">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <circle cx="12" cy="12" r="10"/>
             <polyline points="12 6 12 12 16 14"/>
           </svg>
-          <span>HISTORIAL</span>
+          <span>ESTADO</span>
         </div>
 
         <div class="sidebar-item danger" @click="mostrarCalculadora = true; menuAbierto = false">

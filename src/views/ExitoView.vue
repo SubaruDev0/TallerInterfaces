@@ -52,7 +52,7 @@ onUnmounted(() => {
 
 function updateOnlineStatus() { isOnline.value = navigator.onLine }
 function irAExplicar() { router.push({ name: 'triage' }) }
-function irAHistorial() { router.push({ name: 'historial' }) }
+function irAEstado() { router.push({ name: 'estado' }) }
 function volverHome() { router.push({ name: 'home' }) }
 </script>
 
@@ -93,7 +93,7 @@ function volverHome() { router.push({ name: 'home' }) }
         </button>
 
         <div class="btn-row">
-          <button class="btn-secondary" @click="irAHistorial">
+          <button class="btn-secondary" @click="irAEstado">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <circle cx="12" cy="12" r="10"/>
               <polyline points="12 6 12 12 16 14"/>

@@ -18,7 +18,7 @@ const esUltimoPaso = computed(() => currentStep.value === emergenciasData.value.
 
 const ultimoCaso = computed(() => {
   const casos = casosStore.casos
-  return casos.length > 0 ? casos[casos.length - 1] : null
+  return casos.length > 0 ? casos[0] : null
 })
 
 onMounted(() => {
@@ -26,8 +26,9 @@ onMounted(() => {
     router.push('/victim')
     return
   }
-  if (ultimoCaso.value?.respuestas) {
-    respuestas.value = { ...ultimoCaso.value.respuestas }
+  const prev = ultimoCaso.value?.contexto?.respuestas || ultimoCaso.value?.respuestas
+  if (prev && Object.keys(prev).length > 0) {
+    respuestas.value = { ...prev }
   }
 })
 
@@ -57,11 +58,15 @@ async function handleFinalizar() {
   }
 
   const respuestasActualizadas = { ...respuestas.value }
+  const preguntasMap = {}
+  emergenciasData.value.preguntas?.forEach(p => {
+    preguntasMap[p.id] = p.texto
+  })
   casosStore.actualizarCaso(caso.id, {
     contexto: {
       ubicacion: alertStore.ubicacion || caso.contexto?.ubicacion || '',
       respuestas: respuestasActualizadas,
-      preguntas: caso.contexto?.preguntas || {},
+      preguntas: { ...caso.contexto?.preguntas, ...preguntasMap },
     },
     estado: 'aceptada',
   })

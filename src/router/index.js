@@ -12,7 +12,7 @@ import TriageView from '../views/TriageView.vue'
 
 const routes = [
   { path: '/', redirect: '/victim' },
-  { path: '/historial', redirect: '/victim/historial' },
+  { path: '/historial', redirect: '/victim/estado' },
   { path: '/perfil', redirect: '/victim/perfil' },
   { path: '/contexto', redirect: '/victim/contexto' },
   { path: '/exito', redirect: '/victim/exito' },
@@ -20,7 +20,7 @@ const routes = [
   { path: '/victim', name: 'home', component: HomeView },
   { path: '/victim/contexto', name: 'contexto', component: ContextoView },
   { path: '/victim/exito', name: 'exito', component: ExitoView },
-  { path: '/victim/historial', name: 'historial', component: HistorialView },
+  { path: '/victim/estado', name: 'estado', component: HistorialView },
   { path: '/victim/perfil', name: 'perfil', component: PerfilView },
   { path: '/triage', name: 'triage', component: TriageView },
   { path: '/central', name: 'central', component: CentralView },

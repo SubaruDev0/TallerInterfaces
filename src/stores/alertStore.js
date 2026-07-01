@@ -27,6 +27,7 @@ export const useAlertStore = defineStore('alert', () => {
 
   const perfil = reactive({
     rut: '',
+    num_documento: '',
     nombre: '',
     telefono: '',
     direccion: '',

@@ -53,7 +53,7 @@ export const useCasosStore = defineStore('casos', () => {
     casos.value.filter(c => c.estado === 'aceptada')
   )
   const casosAsignados = computed(() =>
-    casos.value.filter(c => c.estado === 'asignada' || c.estado === 'en_terreno')
+    casos.value.filter(c => c.estado === 'asignada' || c.estado === 'aceptada' || c.estado === 'en_terreno')
   )
   const casosCompletados = computed(() =>
     casos.value.filter(c => c.estado === 'completada')
@@ -71,6 +71,7 @@ export const useCasosStore = defineStore('casos', () => {
       sync()
     } catch (e) {
       console.warn('API no disponible, usando localStorage:', e.message)
+      casos.value = cargarCasosLocal()
     }
   }
 
@@ -83,6 +84,13 @@ export const useCasosStore = defineStore('casos', () => {
       victimContactoNombre: c.victim_contacto_nombre || c.victimContactoNombre || '',
       victimContactoTelefono: c.victim_contacto_telefono || c.victimContactoTelefono || '',
       estado: c.estado || 'recibida',
+      preguntasTerrenoPendientes: c.preguntas_terreno_pendientes || c.preguntasTerrenoPendientes || [],
+      respuestasTerreno: c.respuestas_terreno || c.respuestasTerreno || {},
+      comisariaCercana: c.comisaria_cercana || c.comisariaCercana || '',
+      serviciosExternos: c.servicios_externos || c.serviciosExternos || [],
+      notaOperador: c.nota_operador || c.notaOperador || '',
+      contactoEstado: c.contacto_estado || c.contactoEstado || null,
+      contactoNotas: c.contacto_notas || c.contactoNotas || '',
       creadoEn: c.creado_en || c.creadoEn || new Date().toISOString(),
       actualizadoEn: c.actualizado_en || c.actualizadoEn || new Date().toISOString(),
     }

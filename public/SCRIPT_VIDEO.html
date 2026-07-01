@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Script Video Demo - EMERGENCIA (PRIVADO)</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', system-ui, sans-serif; background: #1a1a2e; color: #e5e7eb; line-height: 1.7; }
+    .container { max-width: 900px; margin: 0 auto; padding: 40px 20px; }
+    .private-banner { background: #dc2626; color: #fff; text-align: center; padding: 12px; border-radius: 8px; font-weight: 800; font-size: 13px; letter-spacing: 2px; margin-bottom: 32px; }
+    .header { text-align: center; margin-bottom: 48px; }
+    .header h1 { font-size: 28px; color: #10b981; margin-bottom: 8px; }
+    .header p { color: #9ca3af; font-size: 14px; }
+    .scene { background: #16162a; border: 1px solid #2d2d50; border-radius: 16px; padding: 28px; margin-bottom: 20px; }
+    .scene-num { display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 50%; background: #006F3E; color: #fff; font-weight: 800; font-size: 15px; margin-right: 12px; }
+    .scene-header { display: flex; align-items: center; margin-bottom: 16px; }
+    .scene-header h2 { font-size: 20px; color: #fff; }
+    .scene .route { display: inline-block; background: #006F3E; color: #fff; padding: 3px 10px; border-radius: 6px; font-size: 11px; font-weight: 700; margin-bottom: 12px; }
+    .scene p { color: #d1d5db; font-size: 14px; margin-bottom: 10px; }
+    .scene .action { background: #1e1e3a; border-left: 3px solid #10b981; padding: 10px 14px; border-radius: 0 8px 8px 0; margin: 10px 0; font-size: 13px; }
+    .scene .action strong { color: #10b981; }
+    .scene .say { background: #1e1e3a; border-left: 3px solid #f59e0b; padding: 10px 14px; border-radius: 0 8px 8px 0; margin: 10px 0; font-size: 13px; font-style: italic; color: #fbbf24; }
+    .scene .say::before { content: '🎤 '; }
+    .scene .camera { background: #1e1e3a; border-left: 3px solid #3b82f6; padding: 10px 14px; border-radius: 0 8px 8px 0; margin: 10px 0; font-size: 13px; color: #93c5fd; }
+    .scene .camera::before { content: '📷 '; }
+    .scene .note { background: #1e1e3a; border-left: 3px solid #a855f7; padding: 10px 14px; border-radius: 0 8px 8px 0; margin: 10px 0; font-size: 13px; color: #c084fc; }
+    .scene .note::before { content: '📝 '; }
+    .scene .tip { background: #1e1e3a; border-left: 3px solid #ef4444; padding: 10px 14px; border-radius: 0 8px 8px 0; margin: 10px 0; font-size: 13px; color: #fca5a5; }
+    .scene .tip::before { content: '⚠️ '; }
+    .scene ul { padding-left: 20px; margin: 8px 0; }
+    .scene li { color: #d1d5db; font-size: 13px; margin-bottom: 4px; }
+    .timeline { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+    .timeline-item { background: #2d2d50; padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 700; color: #10b981; }
+    footer { text-align: center; margin-top: 48px; padding: 24px; color: #6b7280; font-size: 12px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="private-banner">DOCUMENTO PRIVADO — NO COMPARTIR — PARA GRABACION DEL VIDEO</div>
+
+    <div class="header">
+      <h1>Script de Grabacion — Video Demo</h1>
+      <p>EMERGENCIA — Aplicacion de Emergencia para Personas Sordas</p>
+      <p style="margin-top: 8px; color: #6b7280;">Duracion estimada: 3-4 minutos</p>
+    </div>
+
+    <!-- ESCENA 1: Intro -->
+    <div class="scene">
+      <div class="scene-header">
+        <span class="scene-num">1</span>
+        <h2>Intro — Registro</h2>
+      </div>
+      <span class="route">/login</span>
+      <div class="say">"Esta es EMERGENCIA, una app disenada para que personas sordas puedan pedir ayuda a Carabineros de Chile de forma rapida y accesible."</div>
+      <div class="camera">Mostrar pantalla de registro. El GPS ya esta activo (punto verde arriba).</div>
+      <div class="action"><strong>Acciones:</strong> Llenar el formulario: RUT, numero de documento, nombre, telefono, contacto de emergencia. Presionar REGISTRAR.</div>
+      <div class="say">"El usuario se registra una sola vez con sus datos basicos y un contacto de emergencia."</div>
+      <div class="note">Asegurate de que el GPS este activo antes de grabar (punto verde).</div>
+      <div class="timeline">
+        <span class="timeline-item">~15 seg</span>
+      </div>
+    </div>
+
+    <!-- ESCENA 2: Home -->
+    <div class="scene">
+      <div class="scene-header">
+        <span class="scene-num">2</span>
+        <h2>Pantalla Principal — Boton de Panico</h2>
+      </div>
+      <span class="route">/victim</span>
+      <div class="say">"La pantalla principal tiene un boton grande y rojo. Para activar la alarma, hay que mantenerlo presionado 4 segundos."</div>
+      <div class="camera">Mostrar el boton rojo grande con el signo "!" y el badge de GPS activo abajo.</div>
+      <div class="action"><strong>Acciones:</strong> Presionar y mantener el boton 4 segundos. Mostrar el progreso circular mientras se mantiene.</div>
+      <div class="say">"El boton tiene una animacion de progreso para que el usuario sepa que esta funcionando."</div>
+      <div class="camera">Mostrar el badge "GPS Activo" en la parte inferior.</div>
+      <div class="note">La app es mobile-first, mostrarla en un telefono real o en DevTools con viewport 375x812.</div>
+      <div class="timeline">
+        <span class="timeline-item">~20 seg</span>
+      </div>
+    </div>
+
+    <!-- ESCENA 3: Exito -->
+    <div class="scene">
+      <div class="scene-header">
+        <span class="scene-num">3</span>
+        <h2>Pantalla de Exito — Alerta Enviada</h2>
+      </div>
+      <span class="route">/victim/exito</span>
+      <div class="say">"Despues de 4 segundos, la alerta se envia automaticamente. El usuario ve una pantalla de confirmacion."</div>
+      <div class="camera">Mostrar el check verde grande y "ENVIADA!". Luego mostrar los 3 botones: EXPLICAR, ESTADO, INICIO.</div>
+      <div class="action"><strong>Acciones:</strong> Mostrar la pantalla de exito con el badge de ubicacion compartida. Señalar los botones disponibles.</div>
+      <div class="say">"Desde aqui, el usuario puede explicar que tipo de emergencia tiene, ver el estado de su caso, o volver al inicio."</div>
+      <div class="timeline">
+        <span class="timeline-item">~15 seg</span>
+      </div>
+    </div>
+
+    <!-- ESCENA 4: Explicar -->
+    <div class="scene">
+      <div class="scene-header">
+        <span class="scene-num">4</span>
+        <h2>Explicar Emergencia — Triage con LSCh</h2>
+      </div>
+      <span class="route">/triage</span>
+      <div class="say">"La funcionalidad EXPLICAR permite al usuario comunicar que tipo de emergencia tiene, usando pictogramas y GIFs de Lengua de Senas Chilena."</div>
+      <div class="camera">Mostrar la grilla de 6 tarjetas: VIF, Robo, Accidente, Maltrato Animal, Incendio, Ambulancia.</div>
+      <div class="action"><strong>Acciones:</strong> Seleccionar "VIF" (o la que quieras mostrar). Entrar al wizard de preguntas.</div>
+      <div class="say">"Cada tarjeta tiene un GIF de LSCh que se reproduce al tocar. Asi la persona sorda puede comunicarse sin escribir."</div>
+      <div class="camera">Mostrar el wizard con la pregunta y las opciones con GIFs. Navegar 2-3 pasos.</div>
+      <div class="note">Los GIFs se cargan de URLs externas. Asegurate de tener conexion a internet.</div>
+      <div class="timeline">
+        <span class="timeline-item">~30 seg</span>
+      </div>
+    </div>
+
+    <!-- ESCENA 5: Estado -->
+    <div class="scene">
+      <div class="scene-header">
+        <span class="scene-num">5</span>
+        <h2>Estado — Mapa de Seguimiento</h2>
+      </div>
+      <span class="route">/victim/estado</span>
+      <div class="say">"La pantalla de ESTADO muestra un mapa con la ubicacion de la victima y los policiales asignados en camino."</div>
+      <div class="camera">Mostrar el mapa con el punto verde (victima) y el punto amarillo (policial moviendose).</div>
+      <div class="action"><strong>Acciones:</strong> Abrir la pantalla de estado desde el menu lateral o desde el boton en exito.</div>
+      <div class="say">"El punto amarillo representa al policial y se acerca a la victima en tiempo real."</div>
+      <div class="camera">Esperar ~10 segundos para ver la animacion del punto amarillo moviendose.</div>
+      <div class="note">Leaflet + OpenStreetMap. El policial se mueve en 10 pasos de 3 segundos cada uno.</div>
+      <div class="timeline">
+        <span class="timeline-item">~20 seg</span>
+      </div>
+    </div>
+
+    <!-- ESCENA 6: Menu lateral + Camuflaje -->
+    <div class="scene">
+      <div class="scene-header">
+        <span class="scene-num">6</span>
+        <h2>Menu Lateral y Modo Camuflaje</h2>
+      </div>
+      <span class="route">/victim (sidebar)</span>
+      <div class="say">"La app tiene un menu lateral con opciones de Perfil, Estado y un modo camuflaje."</div>
+      <div class="camera">Abrir el menu lateral (boton hamburguesa). Mostrar las opciones: PERFIL, ESTADO, OCULTAR.</div>
+      <div class="action"><strong>Acciones:</strong> Presionar OCULTAR. Mostrar la calculadora. Escribir 133 para volver.</div>
+      <div class="say">"El modo camuflaje es util en situaciones donde no es seguro que la persona tenga la app visible, como en casos de violencia intrafamiliar."</div>
+      <div class="camera">Mostrar la calculadora funcionando. Escribir "133" y ver como vuelve a la app real.</div>
+      <div class="timeline">
+        <span class="timeline-item">~20 seg</span>
+      </div>
+    </div>
+
+    <!-- ESCENA 7: Central Operativa -->
+    <div class="scene">
+      <div class="scene-header">
+        <span class="scene-num">7</span>
+        <h2>Central Operativa (Operador)</h2>
+      </div>
+      <span class="route">/central</span>
+      <div class="say">"Del lado del operador, la Central Operativa recibe las alertas y gestiona el despacho."</div>
+      <div class="camera">Mostrar la vista de Central con la lista de casos pendientes y el detalle.</div>
+      <div class="action"><strong>Acciones:</strong> Seleccionar un caso. Contactar al contacto de emergencia (boton "Contactado"). Asignar carabineros con checkboxes. Marcar servicios externos (Ambulancia/Bomberos). Escribir nota al carabinero.</div>
+      <div class="say">"El operador debe contactar al contacto de emergencia antes de asignar carabineros. Puede asignar multiples carabineros y contactar servicios externos."</div>
+      <div class="camera">Mostrar los 4 pasos: 1) Contacto de emergencia, 2) Servicios externos, 3) Nota para carabinero, 4) Asignar carabineros.</div>
+      <div class="timeline">
+        <span class="timeline-item">~40 seg</span>
+      </div>
+    </div>
+
+    <!-- ESCENA 8: Policia -->
+    <div class="scene">
+      <div class="scene-header">
+        <span class="scene-num">8</span>
+        <h2>Carabineros en Escena</h2>
+      </div>
+      <span class="route">/policia</span>
+      <div class="say">"El carabinero ve los casos asignados con toda la informacion relevante."</div>
+      <div class="camera">Mostrar la vista de Policia con los casos activos.</div>
+      <div class="action"><strong>Acciones:</strong> Abrir un caso. Ver victim, ubicacion, contacto, contexto. Abrir selector de preguntas para enviar a la victima. Marcar "He llegado". Boton de videollamada con interprete LSCh.</div>
+      <div class="say">"El carabinero puede enviar preguntas a la victima, ver el contexto que ella comunico, y si hay una barrera lingueistica, puede llamar a un interprete de Lengua de Senas Chilena por videollamada."</div>
+      <div class="camera">Mostrar el modal de detalle del caso. Luego el selector de preguntas. Luego el modal de interpretes con los 4 disponibles.</div>
+      <div class="note">Los interpretes son mock: 2 disponibles, 2 no disponibles.</div>
+      <div class="timeline">
+        <span class="timeline-item">~40 seg</span>
+      </div>
+    </div>
+
+    <!-- ESCENA 9: Cierre -->
+    <div class="scene">
+      <div class="scene-header">
+        <span class="scene-num">9</span>
+        <h2>Cierre</h2>
+      </div>
+      <div class="say">"EMERGENCIA es una aplicacion que busca cerrar la brecha de comunicacion entre personas sordas y los servicios de emergencia. Con interfaz visual, pictogramas, GIFs de LSCh y un flujo simple, cualquier persona puede pedir ayuda de forma accesible."</div>
+      <div class="camera">Volver a la pantalla principal con el boton de panico. Fade out.</div>
+      <div class="tip">No mostrar la pantalla de registro en el cierre, ya que es poco visual. Terminar con la pantalla del boton de panico.</div>
+      <div class="timeline">
+        <span class="timeline-item">~15 seg</span>
+      </div>
+    </div>
+
+    <footer>
+      <p><strong>Tiempo total estimado: ~3:15 a 4:00 minutos</strong></p>
+      <p style="margin-top: 12px;">PRIVADO — Solo para uso del equipo de desarrollo</p>
+      <p style="margin-top: 4px;">EMERGENCIA — Taller de Interfaces 2026</p>
+    </footer>
+  </div>
+</body>
+</html>
